@@ -4,7 +4,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="sidebar-logo">
-            <a href="#">Maintenance Uploader v1.0</a>
+            <a href="#">Maintenance Uploader v1.2</a>
         </div>
     </div>
     <ul class="sidebar-nav">
