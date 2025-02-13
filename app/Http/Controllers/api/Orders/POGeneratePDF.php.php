@@ -4,17 +4,21 @@ namespace App\Http\Controllers\api\Orders;
 
 use Illuminate\Http\Request;
 use App\Models\Orders\PO;
-use App\Models\Supplier;
-
 use Illuminate\Support\Facades\DB;
 
 use App\http\Requests\Orders\StorePOHeaderRequest;
+use App\http\Requests\Orders\StorePOItemsRequest;
+use App\Http\Controllers\api\Orders\POItemsController;
 use Illuminate\Support\Arr;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class POController
 {
+    protected $POItemsController;
 
+    public function __construct(POItemsController $POItemsController)
+    {
+        $this->POItemsController = $POItemsController;
+    }
 
     public function index()
     {
@@ -42,43 +46,6 @@ class POController
         }
     }
 
-    public function filterPOByStatus(Request $status)
-    {
-        try {
-            // return response()->json(gettype($status));
-            // $status =  $request->input('status');
-            
-            $query = PO::orderBy('DateUploaded', 'desc')->select('id', 'OrderNumber', 'PONumber', 'SupplierName', 'PODate', 'orderPlacer', 'totalDiscount', 'totalCost', 'POStatus')->whereIn('POStatus', $status);
-            
-            if (in_array(null, $status->all(), true)) {
-                $query->orWhereNull('POStatus');
-            }
-
-             $purchaseOrders = $query->get();
-
-
-            if ($purchaseOrders->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No purchase orders found',
-                ], 200);  // HTTP 404 Not Found
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Purchase orders retrieved successfully',
-                'data' => $purchaseOrders
-            ], 200);  // HTTP 200 OK
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);  // HTTP 500 Internal Server Error
-        }
-    }
-
-
 
 
     /**
@@ -89,6 +56,7 @@ class POController
 
         try {
             $data = $request->data;
+            // return PO::create($data);;
 
             DB::transaction(function () use ($data) {
                 $items = Arr::pull($data, 'Items');
@@ -108,6 +76,75 @@ class POController
                 'message' => $e->getMessage(),
             ], 500);  // HTTP 500 Internal Server Error
         }
+    }
+
+    public function insertWholeData(Request $request)
+    {
+        try {
+            $request->validate([
+                'pdf_file' => 'file|mimes:pdf|max:10240', // Validate each file
+            ]);
+
+            $requestDataHeader = $request->data;
+            $requestDataItems = collect($request->data['Items']);
+            //return  $requestDataHeader;
+
+            // Validate headers, items, and deliveries
+            $validationErrors = $this->validateRequest($requestDataHeader);
+
+            if ($validationErrors) {
+                return response()->json($validationErrors);
+            }
+
+            unset($requestDataHeader['Items']);
+            $headerInsertResult = PO::create($requestDataHeader);
+
+            if ($headerInsertResult) {
+
+                $items = new StorePOItemsRequest();
+                $requestDataItems = $requestDataItems->map(function ($item) use ($headerInsertResult) {
+                    // Add a new 'full_name' column to each user
+                    $item->PONumber = $headerInsertResult->PONumber;
+                    return $item;
+                });
+
+
+                $items->merge(['data' =>  $requestDataItems]);
+                $items->merge(['dynamicConnection' => $request->connectionName]);
+
+                $itemInsertResult = $this->POItemsController->store($items);
+                $itemInsertResultData =  $itemInsertResult->getData(true);
+
+                if ($itemInsertResultData['status'] == '0') {
+                    $headerInsertResult->delete();
+                    return response()->json($itemInsertResult);
+                }
+            }
+
+            return response()->json([
+                'response' => 'PDF data inserted succesfully!',
+                'status' => 1
+            ]);
+        } catch (\Exception  $e) {
+
+            return response()->json([
+                'response' => $e->getMessage(),
+                'status' => 0
+            ]);
+        }
+    }
+
+    private function validateRequest(array $header)
+    {
+        $validateHeader = StorePOHeaderRequest::validate($header);
+
+        if ($validateHeader->fails()) {
+            return array_merge(
+                $validateHeader->errors()->toArray(),
+            );
+        }
+
+        return null;
     }
 
 
@@ -245,23 +282,16 @@ class POController
 
     public function generatePDF(string $poid)
     {
+        try {
+            $data = PO::with('POItems')->findOrFail($poid);
+            return view('Pages.PurchaseOrder-PDF', ['po' => $data]); // Pass the user to the view
 
-        $data = PO::with('POItems')->where('PONumber', $poid)->firstOrFail();
-        $data->SupplierCode = trim($data->SupplierCode);
-        $data->Supplier = $data->Supplier->toArray();
-        $data->POItems = $data->POItems->toArray();
-        // dd($data->toArray());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);  // HTTP 400 BAD REQ.
 
-        return view('Pages.PurchaseOrder-PDF', ['po' => $data]); // Pass the user to the view
-
-
-        $pdf = PDF::loadView('Pages.PurchaseOrder-PDF', ['po' => $data])
-            ->setPaper('letter')
-            ->setOptions(['margin-top' => 0, 'margin-bottom' => 0, 'margin-left' => 0, 'margin-right' => 0]);
-
-        return $pdf->download('purchase-order-' . $poid . '.pdf');
-
-        // return response()->json($data);
-
+        }
     }
 }

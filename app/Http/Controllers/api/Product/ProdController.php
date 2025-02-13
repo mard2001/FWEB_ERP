@@ -6,28 +6,18 @@ use App\Models\Product;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Helpers\DynamicSQLHelper;
+use App\Http\Requests\Products\StoreProductData;
 use Illuminate\Http\Request;
 
-class ProdController extends Controller
+class ProdController extends DynamicSQLHelper
 {
     public function index()
     {
         try {
             $purchaseOrders = Product::orderBy('StockCode','desc')
-                                ->select(
-                                    'StockCode',
-                                    'Description',
-                                    'LongDesc',
-                                    'AlternateKey1',
-                                    'StockUom',
-                                    'AlternateUom',
-                                    'OtherUom',
-                                    'ConvFactAltUom',
-                                    'ConvFactOthUom',
-                                    'Mass',
-                                    'Volume',
-                                    'ProductClass',
-                                    'WarehouseToUse',
+                                ->select( 
+                                    'StockCode', 'Description', 'LongDesc', 'AlternateKey1', 'StockUom', 'AlternateUom', 'OtherUom', 'ConvFactAltUom', 'ConvFactOthUom', 'Mass', 'Volume', 'ProductClass', 'WarehouseToUse',
                                 )->get();
 
             if ($purchaseOrders->isEmpty()) {
@@ -56,18 +46,11 @@ class ProdController extends Controller
 
         try {
             $data = $request->data;
-            // return PO::create($data);;
-            echo $data;
-            // DB::transaction(function () use ($data) {
-            //     $items = Arr::pull($data, 'Items');
-            //     $po = Product::create($data);
-            //     $po->POItems()->createMany($items);
-            // });
-
+            Product::create($data);
 
             return response()->json([
                 'success' => true,
-                'message' => 'New Purchase Order created successfully',
+                'message' => 'New Product created successfully',
             ], 200);  // HTTP 200 OK
 
         } catch (\Exception $e) {
@@ -109,6 +92,80 @@ class ProdController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 200);  // HTTP 200 OK
+        }
+
+        return response()->json($response);
+    }
+
+    public function update(StoreProductData $request, string $stockCode)
+    {
+        try {
+            $data = $request['data'];
+            $found = Product::where('StockCode', $stockCode)->first();
+
+            if (!$found) {
+                $response = [
+                    'response' => 'data not found',
+                    'success' => false
+                ];
+
+                //break to reserve server resouces
+                return response()->json($response);
+            }
+
+            // Handle file upload
+            // if ($request->hasFile('image_file')) {
+            //     // Store the file
+            //     $filePath = $request->file('image_file')->store('images', 'public');
+
+            //     $data['uploaded_image'] = $filePath; // Store the file path in the data array
+            // }
+            
+            $found->update($data);
+            return response()->json([
+                'success' => true,
+                'message' =>  "Product updated succesfully!",
+            ]);
+
+        } catch (\Exception $e) {
+
+            $response = [
+                'message' => $e->getMessage(),
+                'success' => false
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function destroy(Request $request, string $stockCode)
+    {
+        try {
+
+            $data = Product::where('StockCode', $stockCode)->first();
+
+            if (!$data) {
+                $response = [
+                    'message' => 'Product not found',
+                    'success' => false
+                ];
+
+                //break to reserve server resouces
+                return response()->json($response);
+            }
+
+            $data->delete();
+
+            $response = [
+                'message' => 'Product deleted succesfully!',
+                'success' => true
+            ];
+        } catch (\Exception $e) {
+
+            $response = [
+                'message' => $e->getMessage(),
+                'success' => 0
+            ];
         }
 
         return response()->json($response);

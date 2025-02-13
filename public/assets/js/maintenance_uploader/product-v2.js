@@ -43,7 +43,8 @@ $(document).ready(async function () {
     isTokenExist();
     GlobalUX();
 
-    await datatables.loadPO();
+    await datatables.loadProdData();
+    await initVS.liteDataVS();
 
     $('#addBtn').on('click', async function () {
         ProdModal.enable(true);
@@ -77,6 +78,134 @@ $(document).ready(async function () {
             console.log('invalid');
         }
 
+    });
+
+    $("#editProdBtn").on("click", async function () {
+        if ($(this).text().toLocaleLowerCase() == 'edit details') {
+            ProdModal.enable(true);
+            $(this).text('Save changes').removeClass('btn-info').addClass('btn-primary');
+            $('#deleteProdBtn').text('Cancel');
+            $('#rePrintPage').hide();
+            $('#confirmProd').hide();
+
+        } else {
+            //save update
+            if (ProdModal.isValid()) {
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    showDenyButton: true,
+                    confirmButtonText: "Yes, Update",
+                    denyButtonText: `Cancel`
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        var $selectedStockCode = $('#StockCode').val();
+                        await ajax('api/v2/product/' + $selectedStockCode, 'POST', JSON.stringify({
+                            data: ProdModal.getData(),
+                            _method: "PUT"
+                        }), (response) => { // Success callback
+
+                            if (response.success) {
+                                $(this).text('Edit details').removeClass('btn-primary').addClass('btn-info');
+                                $('#deleteProdBtn').text('Delete');
+
+                                Swal.fire({
+                                    title: "Success!",
+                                    text: response.message,
+                                    icon: "success"
+                                });
+
+                                $('#confirmPO').hide();
+                                ProdModal.hide();
+                                datatables.loadProdData();
+
+                                // ItemsTH.column(6).visible(false);
+                            } else {
+                                Swal.fire({
+                                    title: "Opppps..",
+                                    text: response.message,
+                                    icon: "error"
+                                });
+                            }
+
+                        }, (xhr, status, error) => { // Error callback
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                Swal.fire({
+                                    title: "Opppps..",
+                                    text: xhr.responseJSON.message,
+                                    icon: "error"
+                                });
+
+                            }
+                        });
+
+                    }
+                });
+            }
+        }
+    });
+
+    $("#deleteProdBtn").on("click", async function () {
+        if ($(this).text().toLowerCase() == 'cancel') {
+
+            $(this).text('Delete');
+
+            $('#editProdBtn').removeClass('btn-primary').addClass('btn-info');
+            $('#editProdBtn').text('Edit details');
+
+            ProdModal.fill(selectedMain);
+            ProdModal.enable(false);
+            $('#confirmProd').hide();
+            $('#rePrintPage').show();
+
+            // ItemsTH.column(6).visible(false);
+
+        } else {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    var $selectedStockCode = $('#StockCode').val();
+                    ajax('api/v2/product/' + $selectedStockCode, 'POST', JSON.stringify({ 
+                        _method: 'DELETE' 
+                    }), (response) => { // Success callback
+                        
+                        if (response.success) {
+                            Swal.fire({
+                                title: "Success!",
+                                text: response.message,
+                                icon: "success"
+                            });
+
+                            datatables.loadProdData();
+                            ProdModal.hide();
+
+                        } else {
+                            Swal.fire({
+                                title: "Opppps..",
+                                text: response.message,
+                                icon: "error"
+                            });
+                        }
+                    }, (xhr, status, error) => { // Error callback
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            Swal.fire({
+                                title: "Opppps..",
+                                text: xhr.responseJSON.message,
+                                icon: "error"
+                            });
+
+                        }
+                    });
+                }
+            });
+        }
     });
 
     $("#ProductTable").on("click", "tbody tr", async function () {
@@ -196,13 +325,11 @@ async function ajax(endpoint, method, data, successCallback = () => { }, errorCa
     });
 }
 
-
-
 const datatables = {
-    loadPO: async () => {
+    loadProdData: async () => {
         const prodData = await ajax('api/v2/product', 'GET', null, (response) => { // Success callback
             console.log(response);
-            datatables.initPODatatable(response);
+            datatables.initProdDatatable(response);
             // ajaxMainData = response.data;
         }, (xhr, status, error) => { // Error callback
             console.error('Error:', error);
@@ -210,7 +337,7 @@ const datatables = {
 
     },
 
-    initPODatatable: (response) => {
+    initProdDatatable: (response) => {
         if (response.success) {
             if (MainTH) {
                 MainTH.clear().draw();
@@ -413,7 +540,6 @@ const datatables = {
     },
 }
 
-
 const ProdModal = {
     isValid: () => {
         return $('#modalFields').valid();
@@ -458,6 +584,8 @@ const ProdModal = {
         $('#editProdBtn').show();
         $("#editProdBtn").text('Edit details').removeClass('btn-primary').addClass('btn-info');
         $('#confirmProd').hide();
+        $('#deleteProdBtn').text('Delete');
+        $('#rePrintPage').show();
 
         ProdModal.enable(false);
         ProdModal.show();
@@ -466,37 +594,33 @@ const ProdModal = {
 
         let ProdData = ProdModal.getData();
         console.log(ProdData);
-        // POData.Items = itemTmpSave.map((item, index) => ({
-        //     ...item,        // ✅ Spread all properties from item
-        //     PRD_INDEX: index + 1 // ✅ Add the new index property
-        // }));
 
-        // await ajax('api/orders/po', 'POST', JSON.stringify({ data: POData }), (response) => { // Success callback
-        //     if (response.success) {
+        await ajax('api/v2/product', 'POST', JSON.stringify({ data: ProdData }), (response) => { // Success callback
+            if (response.success) {
 
-        //         datatables.loadPO();
-        //         POModal.hide();
+                datatables.loadProdData();
+                ProdModal.hide();
 
-        //         Swal.fire({
-        //             title: "Success!",
-        //             text: response.message,
-        //             icon: "success"
-        //         });
+                Swal.fire({
+                    title: "Success!",
+                    text: response.message,
+                    icon: "success"
+                });
 
-        //     }
+            }
 
 
-        // }, (xhr, status, error) => { // Error callback
+        }, (xhr, status, error) => { // Error callback
 
-        //     if (xhr.responseJSON && xhr.responseJSON.message) {
-        //         Swal.fire({
-        //             title: "Opppps..",
-        //             text: xhr.responseJSON.message,
-        //             icon: "error"
-        //         });
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                Swal.fire({
+                    title: "Opppps..",
+                    text: xhr.responseJSON.message,
+                    icon: "error"
+                });
 
-        //     }
-        // });
+            }
+        });
 
     },
     getData: () => {
@@ -521,5 +645,28 @@ const ProdModal = {
 
         return data;
     },
+}
+
+const initVS = {
+    liteDataVS: async () => {
+        // Initialize VirtualSelect for ship via
+        VirtualSelect.init({
+            ele: '#filterPOVS',                   // Attach to the element
+            options: [
+                // { label: "", value: null },
+                // { label: "", value: 1 },
+                // { label: "", value: "2" },
+
+            ], 
+            multiple: true, 
+            hideClearButton: true, 
+            search: false,
+            maxWidth: '100%', 
+            additionalClasses: 'rounded',
+            additionalDropboxClasses: 'rounded',
+            additionalDropboxContainerClasses: 'rounded',
+            additionalToggleButtonClasses: 'rounded',
+        });
+    }
 }
 

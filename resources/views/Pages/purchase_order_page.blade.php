@@ -127,6 +127,21 @@
             border-radius: 0 !important;
         }
     }
+
+    @media (max-width: 992px) {
+        .custom-modal-fullscreen {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .custom-modal-fullscreen .modal-content {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+    }
 </style>
 
 <x-table id="POHeaderTable">
@@ -151,17 +166,17 @@
         <div class="row justify-content-between d-none">
 
             <div class="col-5">
-                <textarea class="form-control" id="exampleFormControlTextarea1" placeholder="Address" rows="2" style="resize: none; border-radius: 0;"></textarea>
+                <textarea class="form-control" id="exampleFormControlTextarea1 rounded-0" placeholder="Address" rows="2" style="resize: none;"></textarea>
                 <input type="text" disabled id="mobile" name="mobile"
-                    class="form-control form-control-sm bg-white" style="border-radius: 0;" required placeholder="Mobile">
+                    class="form-control form-control-sm bg-white rounded-0" required placeholder="Mobile">
             </div>
 
             <div class="col-5 text-end">
                 <input type="text" disabled id="date" name="date" readonly
-                    class="form-control form-control-sm bg-white" style="border-radius: 0;" required placeholder="Date">
+                    class="form-control form-control-sm bg-white rounded-0" required placeholder="Date">
 
                 <input type="text" disabled id="poNumber" name="poNumber"
-                    class="form-control form-control-sm bg-white" style="border-radius: 0;" required placeholder="PO #">
+                    class="form-control form-control-sm bg-white rounded-0" required placeholder="PO #">
             </div>
         </div>
 
@@ -219,7 +234,9 @@
         <div class="row d-flex flex-wrap mt-1 fs12">
             <div class="col pe-0 text-center text-white">
                 <label for="requisitioner" class="w-100 border-0 bg-primary py-1">REQUISITIONER</label>
-                <input type="text" disabled id="requisitioner" name="requisitioner" class="form-control form-control-sm bg-white py-2" style="border-radius: 0;" required>
+                <input type="text" disabled id="requisitioner" name="requisitioner"
+                    class="form-control form-control-sm bg-white py-2 rounded-0" required>
+
             </div>
             <div class="col px-0 text-center text-white">
                 <label for="shipVia" class="w-100 border-0 bg-primary py-1">SHIP VIA</label>
@@ -234,13 +251,13 @@
             <div class="col px-0 text-center text-white">
                 <label for="fob" class="w-100 border-0 bg-primary py-1">F.O.B.</label>
                 <input type="text" disabled id="fob" name="fob"
-                    class="form-control form-control-sm bg-white py-2" style="border-radius: 0;" required>
+                    class="form-control form-control-sm bg-white py-2 rounded-0" required>
             </div>
 
             <div class="col ps-0 text-center text-white">
-                <label for="shippingTerms" class="w-100 border-0 bg-primary py-1">SHIPPING TERMS</label>
+                <label for="shippingTerms" class="w-100 border-0 bg-primary py-1 rounded-0">SHIPPING TERMS</label>
                 <input type="text" disabled id="shippingTerms" name="shippingTerms"
-                    class="form-control form-control-sm bg-white py-2" style="border-radius: 0;" required>
+                    class="form-control form-control-sm bg-white py-2" required>
             </div>
         </div>
 
@@ -394,23 +411,23 @@
                                 <div class="px-1 py-0 w-100">
 
                                     <label for="Decription">Decription</label>
-                                    <input disabled type="text" id="Decription" name="Decription" class="form-control bg-white"
-                                        required placeholder="Decription" style="border-radius: 0;">
+                                    <input disabled type="text" id="Decription" name="Decription" class="form-control bg-white rounded-0"
+                                        required placeholder="Decription">
 
                                 </div>
 
                                 <div class="d-flex justify-content-between">
-                                    <div class="px-1 py-0 w-50" style="border-radius: 0;">
+                                    <div class="px-1 py-0 w-50 rounded-0">
                                         <label for="PricePerUnit">Price Per Unit</label>
-                                        <input disabled type="text" id="PricePerUnit" name="PricePerUnit" class="form-control bg-white"
-                                            permit-fs required placeholder="Price Per Unit" readonly style="border-radius: 0;">
+                                        <input disabled type="text" id="PricePerUnit" name="PricePerUnit" class="form-control bg-white rounded-0"
+                                            permit-fs required placeholder="Price Per Unit" readonly>
 
                                     </div>
 
                                     <div class="px-1 py-0 w-50">
                                         <label for="TotalPrice">Total Price</label>
-                                        <input disabled type="text" id="TotalPrice" name="TotalPrice" class="form-control bg-white"
-                                            required placeholder="Total Price" style="border-radius: 0;" readonly>
+                                        <input disabled type="text" id="TotalPrice" name="TotalPrice" class="form-control bg-white rounded-0"
+                                            required placeholder="Total Price" readonly>
                                     </div>
                                 </div>
 
@@ -425,6 +442,7 @@
                                             <input disabled type="number" id="CSQuantity" name="CSQuantity" class="form-control bg-white rounded-0"
                                                 required>
                                         </div>
+                                        <label id="CSQuantity-error" class="error px-1" for="CSQuantity"></label>
                                     </div>
                                 </div>
 
@@ -437,6 +455,8 @@
                                                 required>
                                         </div>
                                     </div>
+                                    <label id="IBQuantity-error" class="error px-1" for="IBQuantity"></label>
+
                                 </div>
 
                                 <div class="row mx-1 UOMField" id="PCDiv">
@@ -447,6 +467,8 @@
                                             <input disabled type="number" id="PCQuantity" name="PCQuantity" class="form-control bg-white rounded-0"
                                                 required>
                                         </div>
+                                        <label id="PCQuantity-error" class="error px-1" for="PCQuantity"></label>
+
                                     </div>
                                 </div>
 
@@ -535,61 +557,48 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content w-100 h-100">
             <div class="modal-body" style="height: auto; max-height: 75vh;">
-                <form id="newVendorModal">
+                <form id="newVendorForm">
                     <div class="row">
                         <div class="col d-flex flex-column">
 
-                            <div class="row mt-2">
-                                <div class="col">
-
-                                    <input type="text" id="SupplierCode" name="SupplierCode" class="form-control bg-white"
-                                        required placeholder="Supplier Code" style="border-radius: 0;">
-
-                                </div>
-                                <div class="col">
-
-                                    <input type="text" id="SupplierType" name="SupplierType" class="form-control bg-white"
-                                        required placeholder="Supplier Type" style="border-radius: 0;">
-
-                                </div>
-                            </div>
+                            <input type="text" id="SupplierType" name="SupplierType" class="form-control bg-white mt-2 rounded-0"
+                                required placeholder="Supplier Type">
 
 
-                            <input type="text" id="SupplierName" name="SupplierName" class="form-control bg-white mt-2"
-                                required placeholder="Supplier Name" style="border-radius: 0;">
+                            <input type="text" id="SupplierName" name="SupplierName" class="form-control bg-white mt-2 rounded-0"
+                                required placeholder="Supplier Name">
 
-                            <input type="text" id="TermsCode" name="TermsCode" class="form-control bg-white mt-2"
-                                required placeholder="Terms Code" style="border-radius: 0;">
+                            <input type="text" id="TermsCode" name="TermsCode" class="form-control bg-white mt-2 rounded-0"
+                                required placeholder="Terms Code">
 
 
-                            <input type="text" id="ContactPerson" name="ContactPerson" class="form-control bg-white mt-2"
-                                required placeholder="Contact Person" style="border-radius: 0;">
+                            <input type="text" id="ContactPerson" name="ContactPerson" class="form-control bg-white mt-2 rounded-0"
+                                required placeholder="Contact Person">
 
-                            <input type="text" id="ContactNo" name="ContactNo" class="form-control bg-white mt-2"
-                                required placeholder="ContactNo" style="border-radius: 0;">
-
+                            <input type="text" id="ContactNo" name="ContactNo" class="form-control bg-white mt-2 rounded-0"
+                                required placeholder="ContactNo">
 
                         </div>
                         <div class="col d-flex flex-column">
 
-                            <div id="Region" name="Region" class="form-control bg-white p-0 w-100 mt-2"
-                                required placeholder="Region" style="border-radius: 0;"><input disabled type="text" class="form-control bg-white border-0"
-                                    required placeholder="Region" style="border-radius: 0;" readonly></div>
+                            <div id="Region" name="Region" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
+                                required placeholder="Region"><input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="Region" readonly></div>
 
-                            <div id="Province" name="Province" class="form-control bg-white p-0 w-100 mt-2"
-                                required placeholder="Province" style="border-radius: 0;"><input disabled type="text" class="form-control bg-white border-0"
-                                    required placeholder="Province" style="border-radius: 0;" readonly> </div>
+                            <div id="Province" name="Province" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
+                                required placeholder="Province"><input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="Province" readonly> </div>
 
-                            <div id="CityMunicipality" name="CityMunicipality" class="form-control bg-white p-0 w-100 mt-2"
-                                required placeholder="City" style="border-radius: 0;"><input disabled type="text" class="form-control bg-white border-0"
-                                    required placeholder="City / Municipality" style="border-radius: 0;" readonly> </div>
+                            <div id="CityMunicipality" name="CityMunicipality" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
+                                required placeholder="City"><input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="City / Municipality" readonly> </div>
 
-                            <div id="Barangay" name="Barangay" class="form-control bg-white p-0 w-100 mt-2"
-                                required placeholder="Barangay" style="border-radius: 0;"> <input disabled type="text" class="form-control bg-white border-0"
-                                    required placeholder="Barangay" style="border-radius: 0;" readonly> </div>
+                            <div id="Barangay" name="Barangay" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
+                                required placeholder="Barangay"> <input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="Barangay" readonly> </div>
 
 
-                            <textarea class="form-control mt-2" id="NVCompleteAddress" placeholder="Address" rows="2" style="resize: none; border-radius: 0;"></textarea>
+                            <textarea class="form-control mt-2 rounded-0" id="NVCompleteAddress" placeholder="Address" rows="2" style="resize: none;"></textarea>
 
 
 
@@ -599,13 +608,16 @@
             </div>
 
             <div class="modal-footer">
-                <button type="submit" class="btn btn-info btn-info btn-sm text-white px-3" id="newVendorSaveBtn">Save</button>
+                <button type="submit" class="btn btn-primary btn-sm text-white px-3" id="newVendorSaveBtn">Save</button>
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
+<x-slot:uploader_modal>
+
+</x-slot:uploader_modal>
 @endsection
 
 @section('pagejs')
@@ -617,7 +629,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
 <script type="text/javascript" src="{{ asset('assets/js/vendor/virtual-select.min.js') }}"></script>
-<!-- <script type="module" src="{{ asset('assets/js/PH_Address/virtualSelectAddresses.js') }}"></script> -->
+<script type="module" src="{{ asset('assets/js/PH_Address/virtualSelectAddresses.js') }}"></script>
 <script type="text/javascript" src="{{ asset('assets/js/maintenance_uploader/purchase_order-v2.js') }}"></script>
 
 <script>
