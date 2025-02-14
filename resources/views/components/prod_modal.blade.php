@@ -11,7 +11,7 @@
             <div class="modal-footer py-1 d-flex justify-content-between" id="delprint">
                 <div>
                     <button type="button" class="btn btn-sm btn-danger" id="deleteProdBtn">Delete Product</button>
-                    <button type="button" class="btn btn-sm btn-primary" id="rePrintPage">Print Product</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="rePrintPage" style="display: none;">Print Product</button>
                 </div>
                 <div>
                     <button type="button" class="btn btn-sm btn-primary text-white" id="confirmProd">Confrim Product</button>

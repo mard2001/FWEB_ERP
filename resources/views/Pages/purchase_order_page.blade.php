@@ -615,9 +615,6 @@
     </div>
 </div>
 
-<x-slot:uploader_modal>
-
-</x-slot:uploader_modal>
 @endsection
 
 @section('pagejs')
@@ -634,223 +631,172 @@
 
 <script>
     $(document).ready(async function() {
-        $("#uploadBtn").on("click", async function() {
+
+        $("#uploadBtn").click(modalUploader);
+        
+        var modalUploader = async function () {
+            var fileInput = $('#formFileMultiple').prop('files');
+
             //validate all files if csv file and to fileList
+            var acceptedFiles = false;
             var appendTable = '';
-            var file_data = $('#formFileMultiple').prop('files');
+            for (var i = 0; i < fileInput.length; i++) {
 
-            var pdfOnly = true;
-            for (var i = 0; i < file_data.length; i++) {
+                appendTable += trNew(fileInput[i].name, i);
 
-                appendTable += trNew(file_data[i].name, i);
-                var fileExtension = file_data[i].name.split('.').pop().toLowerCase();
+                var fileExtension = fileInput[i].name.split('.').pop().toLowerCase();
 
-                if (!fileExtension == 'pdf') {
-                    pdfOnly = false;
+                if (fileExtension == 'csv') {
+                    acceptedFiles = true;
+                } else {
+
+                    acceptedFiles = false;
                     break;
                 }
             }
 
-            if (pdfOnly && file_data.length > 0) {
-
+            if (acceptedFiles) {
                 $('#fileListTable').html(appendTable);
-                $('#totalFiles').html(file_data.length);
-                $('#totalFile').html(file_data.length);
+                $('#totalFiles').html(fileInput.length);
+                $('#totalFile').html(fileInput.length);
+
+                for (let i = 0; i < fileInput.length; i++) {  // Changed var to let
+                    if (fileInput[i]) {
+                        //console.log(`Processed index: ${i}`);
+
+                        Papa.parse(fileInput[i], {
+                            header: true, // Treat the first row as the header
+                            dynamicTyping: true,
+                            // transform: function (value) {
+                            //     return value.trim(); // Trim each field
+                            // },
+                            complete: async function (results) {
+
+                                const cleanedData = results.data
+                                    .map(row => Object.fromEntries(
+                                        Object.entries(row).filter(([, value]) => {
+                                            // Only attempt to trim if value is a string
+                                            if (typeof value === 'string') {
+                                                value = value.trim(); // Trim the string
+                                            }
+                                            // Return only non-null, non-empty values
+                                            return value !== null && value !== '';
+                                        })
+                                    ))
+                                    .filter(row => Object.keys(row).length > 0); // Only keep non-empty objects
+
+                                //console.log(JSON.stringify(cleanedData, null, 2));
 
 
-                for (var i = 0; i < file_data.length; i++) {
+                                const updatedData = cleanedData.map(item => {
+                                    //     delete item.thumbnail;  // Remove the 'age' property
+                                    //     delete item.token;  // Remove the 'age' property
 
-                    var fileFormData = new FormData();
-                    fileFormData.append('pdf_file', file_data[i]);
+                                    return Object.fromEntries(
+                                        Object.entries(item).map(([key, value]) => [key, value.toString().toLowerCase() == "null" ? null : value])
+                                    );
+                                });
 
-                    var convertedtoString = await readpdf(file_data[i]);
-                    var retrievedUser = JSON.parse(localStorage.getItem('dbcon'));
+                                // Call async API function and process response
+                                var response = await apiCommunicationDbChanges(1, JSON.stringify(updatedData), 1);
 
-                    fileFormData.append('conn', JSON.stringify(retrievedUser));
-                    fileFormData.append('extractedString', convertedtoString);
+                                var iconResult = `<span class="mdi mdi-alert-circle text-danger resultIcon"></span>`;
+                                var insertedResultColor = `text-danger`;
 
+                                if (response.status_response == 1) {
+                                    iconResult = `<span class="mdi mdi-check-circle text-success resultIcon"></span>`
+                                    var incrementSuccess = parseInt($('#totalUploadSuccess').val(), 10) || 0; // Parse the value as an integer, default to 0 if NaN
+                                    incrementSuccess++;
 
-                    // Call async API function and process response
-                    var response = await ajaxCall('POST', fileFormData);
+                                    $('#totalUploadSuccess').val(incrementSuccess);
+                                    $('#totalUploadSuccess').text(incrementSuccess);
 
-                    var iconResult = `<span class="mdi mdi-alert-circle text-danger resultIcon"></span>`;
-                    var insertedResultColor = `text-danger`;
-
-                    if (response.subTotal_response == 1) {
-                        iconResult = `<span class="mdi mdi-check-circle text-success resultIcon"></span>`
-                        var incrementSuccess = parseInt($('#totalUploadSuccess').val(), 10) || 0; // Parse the value as an integer, default to 0 if NaN
-                        incrementSuccess++;
-
-                        $('#totalUploadSuccess').val(incrementSuccess);
-                        $('#totalUploadSuccess').text(incrementSuccess);
-
-                        insertedResultColor = 'text-success';
+                                    insertedResultColor = 'text-success';
 
 
-                    }
-                    if (response.subTotal_response == 2) {
+                                } if (response.status_response == 2) {
 
-                        iconResult = `<span class="mdi mdi-alert-circle text-warning resultIcon"></span>`
-                        insertedResultColor = 'text-warning';
-                    }
+                                    iconResult = `<span class="mdi mdi-alert-circle text-warning resultIcon"></span>`
+                                    insertedResultColor = 'text-warning';
+                                }
 
-                    $("#filesubTotal" + i).html(iconResult); // Use i here to update the correct element
-                    // $("#insertedStat" + i).html(`${response.total_inserted} / ${response.tatal_entry}`).addClass(insertedResultColor);
+                                $("#fileStatus" + i).html(iconResult);  // Use i here to update the correct element
+                                $("#insertedStat" + i).html(`${response.total_inserted} / ${response.tatal_entry}`).addClass(insertedResultColor);
 
-                    if (i == file_data.length - 1) {
-                        $('#formFileMultiple').val('');
+                                if (i == fileInput.length - 1) {
+                                    $('#formFileMultiple').val('');
 
-                        var allResultIcon = $('#fileListTable').find('.resultIcon');
-                        var swal = {
-                            title: "Success!",
-                            text: 'All data successfully Inserted',
-                            icon: "success"
-                        };
+                                    var allResultIcon = $('#fileListTable').find('.resultIcon');
+                                    var swal = {
+                                        title: "Success!",
+                                        text: 'All data successfully Inserted',
+                                        icon: "success"
+                                    };
 
-                        allResultIcon.each(function(index, element) {
-                            // console.log($(element).attr('class'));
+                                    allResultIcon.each(function (index, element) {
+                                        // console.log($(element).attr('class'));
 
-                            if (!$(element).hasClass('text-success')) {
-                                console.log('fail ' + $(element).attr('class'));
+                                        if (!$(element).hasClass('text-success')) {
+                                            console.log('fail ' + $(element).attr('class'));
 
-                                swal = {
-                                    title: "Warning!",
-                                    text: 'Not all data inserted.\nReview uploaded pdf content',
-                                    icon: "warning"
-                                };
+                                            swal = {
+                                                title: "Warning!",
+                                                text: 'Not all data inserted.\nReview uploaded csv content',
+                                                icon: "warning"
+                                            };
 
-                                return false;
-                            } else {
-                                console.log('passed ' + $(element).attr('class'));
+                                            return false;
+                                        } else {
+                                            console.log('passed ' + $(element).attr('class'));
 
+                                        }
+
+                                    });
+
+
+                                    Swal.fire(swal);
+                                    getAllXmlData();
+
+
+                                }
+                            },
+                            error: function (error) {
+                                console.log("Error parsing the file: ", error.message);
                             }
-
                         });
-
-
-                        Swal.fire(swal);
-                        getAllXmlData();
-
-
                     }
-
                 }
+
 
             } else {
                 Swal.fire({
-                    icon: "error d-block",
+                    icon: "error",
                     title: "Review files",
                     text: "Please select csv files only",
                 });
-
             }
-        });
+        };
 
 
-        async function readpdf(file) {
 
-            try {
-                const fileReader = new FileReader();
+        function trNew(fileName, indexId) {
+            return `<tr id="fileRow${indexId}">
+                        <td class="imgSizeContainer col-1">
+                            <span class="mdi mdi-file-document-outline"></span>
+                        </td>
+                        <td class = "col-9" style="padding-left: 0px;">
+                            <span>${fileName}</span>
+                        </td>
+                        <td id="insertedStat${indexId}" class="text-end col-2">    
+                        
+                        </td>
+                        <td id="fileStatus${indexId}" class="text-center col-1">       
+                            <span class="loader">                                    
+                        </span>              
+                        </td>
 
-                const typedArray = await new Promise((resolve, reject) => {
-                    fileReader.onload = () => resolve(new Uint8Array(fileReader.result));
-                    fileReader.onerror = reject;
-                    fileReader.readAsArrayBuffer(file);
-                });
-
-                const pdf = await pdfjsLib.getDocument(typedArray).promise;
-                let pdfText = '';
-
-                for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-                    const page = await pdf.getPage(pageNumber);
-                    const textContent = await page.getTextContent();
-
-                    textContent.items.forEach(textItem => {
-                        if (textItem.str.trim()) { // Skip empty strings
-                            pdfText += textItem.str + '\n';
-                        }
-                    });
-                }
-
-                return pdfText;
-            } catch (error) {
-                console.error('Error occurred:', error);
-                return '';
-            }
-
+                    </tr>`;
         }
-
-        async function ajaxCall(method, formData = null) {
-
-            return await $.ajax({
-                url: globalApi + 'api/upload-po-pdf',
-                type: method,
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('api_token')
-                },
-                processData: false, // Required for FormData
-                contentType: false, // Required for FormData
-                data: formData, // Convert the data to JSON format
-                // data: xmlJson, // Convert the data to JSON format
-
-                success: async function(response) {
-                    console.log(response);
-
-                    if (response.subTotal_response != 1) {
-
-                        //console.log(JSON.stringify(response, null, 2));
-                        //console.log(response.extracted_text);
-
-
-
-                    }
-
-                    //console.log(response);
-                    return response;
-
-                },
-                error: async function(xhr, subTotal, error) {
-
-
-                    Swal.fire({
-                        icon: "error d-block",
-                        title: "Api Error",
-                        text: xhr.responseJSON?.message || xhr.statusText,
-
-                    });
-
-                    console.log(xhr, subTotal, error)
-
-                    return xhr, subTotal, error;
-                }
-            });
-        }
-
-        async function loadPdfText(pdfUrl) {
-            try {
-                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-                let pdfText = '';
-
-                for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-                    const page = await pdf.getPage(pageNumber);
-                    const textContent = await page.getTextContent();
-
-                    textContent.items.forEach(textItem => {
-                        if (textItem.str.charCodeAt(0) !== 32) {
-                            pdfText += textItem.str + '\n';
-                        }
-                    });
-                }
-
-                //console.log(pdfText);
-                return pdfText;
-            } catch (error) {
-                console.error('Error occurred:', error);
-                return false;
-            }
-        }
-
-
 
 
     });

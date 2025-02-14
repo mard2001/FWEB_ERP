@@ -1,6 +1,7 @@
-console.log("FROM V2");
 var MainTH, selectedMain;
 var globalApi = "http://127.0.0.1:8000/";
+var fileCtr = 0;
+var insertion = 0;
 
 const dataTableCustomBtn = `<div class="main-content buttons w-100 overflow-auto d-flex align-items-center px-2" style="font-size: 12px;">
                                 <div class="btn d-flex justify-content-around px-2 align-items-center me-1" id="addBtn">
@@ -83,6 +84,7 @@ $(document).ready(async function () {
     $("#editProdBtn").on("click", async function () {
         if ($(this).text().toLocaleLowerCase() == 'edit details') {
             ProdModal.enable(true);
+            $('#StockCode').prop('disabled', true);
             $(this).text('Save changes').removeClass('btn-info').addClass('btn-primary');
             $('#deleteProdBtn').text('Cancel');
             $('#rePrintPage').hide();
@@ -156,7 +158,7 @@ $(document).ready(async function () {
             ProdModal.fill(selectedMain);
             ProdModal.enable(false);
             $('#confirmProd').hide();
-            $('#rePrintPage').show();
+            // $('#rePrintPage').show();
 
             // ItemsTH.column(6).visible(false);
 
@@ -237,6 +239,10 @@ $(document).ready(async function () {
         });
 
 
+    });
+
+    $("#csvUploadShowBtn").on("click", async function () {
+        $('#uploadCsv').modal('show');
     });
 });
 
@@ -585,7 +591,7 @@ const ProdModal = {
         $("#editProdBtn").text('Edit details').removeClass('btn-primary').addClass('btn-info');
         $('#confirmProd').hide();
         $('#deleteProdBtn').text('Delete');
-        $('#rePrintPage').show();
+        // $('#rePrintPage').show();
 
         ProdModal.enable(false);
         ProdModal.show();
@@ -607,6 +613,12 @@ const ProdModal = {
                     icon: "success"
                 });
 
+            }else if(response.success == 409){
+                Swal.fire({
+                    title: "error",
+                    text: response.message,
+                    icon: "error"
+                });
             }
 
 
@@ -670,3 +682,151 @@ const initVS = {
     }
 }
 
+
+var expectedtotalRows = 0;
+var actualtotalRows = 0;
+
+async function ajaxCall(method, formDataArray = null) {
+    let formData = new FormData();
+    formData.append('products', JSON.stringify(formDataArray));
+
+    return await $.ajax({
+        url: globalApi + 'api/v2/product/upload',
+        type: method,
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('api_token')
+        },
+        processData: false, // Required for FormData
+        contentType: false, // Required for FormData
+        data: JSON.stringify(formDataArray), // Convert the data to JSON format
+
+        success: async function(response) {
+            insertion++;
+            expectedtotalRows += response.totalFileLength;
+            actualtotalRows += response.successful;
+
+            var iconResult = `<span class="mdi mdi-alert-circle text-danger resultIcon"></span>`;
+            var insertedResultColor = `text-danger`;
+
+            if (response.success) {
+                iconResult = `<span class="mdi mdi-check-circle text-success resultIcon"></span>`
+                var incrementSuccess = parseInt($('#totalUploadSuccess').val(), 10) || 0; // Parse the value as an integer, default to 0 if NaN
+                incrementSuccess++;
+
+                $('#totalUploadSuccess').val(incrementSuccess);
+                $('#totalUploadSuccess').text(incrementSuccess);
+
+                insertedResultColor = 'text-success';
+
+
+            } else if (!response.success) {
+
+                iconResult = `<span class="mdi mdi-alert-circle text-warning resultIcon"></span>`
+                insertedResultColor = 'text-warning';
+            }
+
+            $("#fileStatus" + insertion).html(iconResult); 
+            $("#insertedStat" + insertion).html(`${response.successful} / ${response.totalFileLength}`).addClass(insertedResultColor);
+
+            if(fileCtr>0 && fileCtr==insertion){
+                console.log('1')
+                if(expectedtotalRows>0 && expectedtotalRows == actualtotalRows){
+                    Swal.fire({
+                        title: "Success!",
+                        text: 'All data successfully Inserted',
+                        icon: "success"
+                    });
+                } else {
+                    var unsucc = expectedtotalRows-actualtotalRows;
+                    Swal.fire({
+                        title: "Warning!",
+                        html: 'Not all data inserted. Review uploaded CSV content.<br>' + unsucc + ' Products not inserted.',
+                        icon: "warning"
+                    });
+                }
+            }
+        },
+        error: async function(xhr, subTotal, error) {
+            Swal.fire({
+                icon: "error",
+                title: "Api Error",
+                text: xhr.responseJSON?.message || xhr.statusText,
+
+            });
+            return xhr, subTotal, error;
+        }
+    });
+}
+const uploadconfirmUpload = document.getElementById('uploadBtn2')
+    .addEventListener('click', () => {
+        this.disabled = true;
+        var appendTable = '';
+        // Get all the files selected in the file input
+        var files = document.getElementById('formFileMultiple').files;
+    
+        Array.from(files).forEach(file => {
+            const checkExtension = file.name.split('.').pop().toLowerCase();
+            
+            // Check the extension
+            if( !['csv', 'pdf', 'xls', 'xlsx'].includes(checkExtension) ){
+                Swal.fire({
+                    icon: "error",
+                    title: "Review files",
+                    text: "Please select .csv files only",
+                });
+            }
+            fileCtr++;
+            appendTable += trNew(file.name, fileCtr);
+        });
+
+        $('#fileListTable').html(appendTable);
+        $('#totalFiles').html(files.length);
+        $('#totalFile').html(files.length);
+        // Loop over each file and check the extension
+        Array.from(files).forEach(file => {
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            if (fileExtension === 'csv') {
+                processCSVFile(file); // Process CSV
+            } else if (fileExtension === 'pdf') {
+                // 
+            } else if (['xls', 'xlsx'].includes(fileExtension)) {
+                // 
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Review files",
+                    text: ("Unsupported file type:", file.name),
+                });
+            }
+        });
+    });
+
+function processCSVFile(file) {
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            ajaxCall('POST', results.data);
+        }
+    });
+}
+
+function trNew(fileName, indexId) {
+    return `<tr id="fileRow${indexId}">
+                <td class="imgSizeContainer col-1">
+                    <span class="mdi mdi-file-document-outline"></span>
+                </td>
+                <td class = "col-9" style="padding-left: 0px;">
+                    <span>${fileName}</span>
+                </td>
+                <td id="insertedStat${indexId}" class="text-end col-2">    
+                
+                </td>
+                <td id="fileStatus${indexId}" class="text-center col-1">       
+                    <span class="loader">                                    
+                </span>              
+                </td>
+
+            </tr>`;
+}

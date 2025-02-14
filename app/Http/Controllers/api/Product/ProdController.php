@@ -4,11 +4,12 @@ namespace App\Http\Controllers\api\Product;
 
 use App\Models\Product;
 use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Helpers\DynamicSQLHelper;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\Products\StoreProductData;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Helpers\DynamicSQLHelper;
 
 class ProdController extends DynamicSQLHelper
 {
@@ -46,6 +47,15 @@ class ProdController extends DynamicSQLHelper
 
         try {
             $data = $request->data;
+            // Try to find the product by StockCode
+            $checkproduct = Product::where('StockCode', $data['StockCode'])->first();
+            if($checkproduct){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product already exists',
+                ], 409);
+            }
+
             Product::create($data);
 
             return response()->json([
@@ -61,6 +71,38 @@ class ProdController extends DynamicSQLHelper
         }
     }
 
+    public function storeBulk(Request $request)
+    {   
+        $allproducts = $request->json()->all();
+        $inserted = 0;
+        $notInserted = 0;
+        try {
+            foreach ($allproducts as $prodData) {
+                unset($prodData['TimeStamp']);
+                
+                $InsertProd = Product::firstOrCreate(['StockCode' => $prodData['StockCode']],$prodData);
+                if ($InsertProd->wasRecentlyCreated) {
+                    $inserted++;
+                } else {
+                    $notInserted++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Products created successfully',
+                'successful' => $inserted,
+                'unsuccessful' => $notInserted,
+                'totalFileLength' => count($allproducts)
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
     public function show(string $stockCode)
     {
         $response = array();
@@ -170,4 +212,5 @@ class ProdController extends DynamicSQLHelper
 
         return response()->json($response);
     }
+
 }

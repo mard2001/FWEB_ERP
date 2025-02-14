@@ -97,7 +97,7 @@ class Product extends Model
         // 'DistWarehouseToUse',
         // 'JobClassification',
         'SubContractCost',
-        'DateStkAdded',
+        // 'DateStkAdded',
         // 'InspectionFlag',
         // 'SerialPrefix',
         // 'SerialSuffix',

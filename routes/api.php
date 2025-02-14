@@ -78,7 +78,7 @@ Route::middleware(['auth:sanctum', DynamicDatabase::class])->group(function () {
     // });
 });
 
-// Route::get('/v2/product', [ProdController::class, 'index']);
+Route::post('/v2/product/upload', [ProdController::class, 'storeBulk']);
 Route::apiResource('/v2/product', ProdController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
