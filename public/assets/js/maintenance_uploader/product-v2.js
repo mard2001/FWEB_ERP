@@ -1,7 +1,8 @@
 var MainTH, selectedMain;
 var globalApi = "http://127.0.0.1:8000/";
-var fileCtr = 0;
+var fileCtrTotal = 0;
 var insertion = 0;
+var jsonArr = [];
 
 const dataTableCustomBtn = `<div class="main-content buttons w-100 overflow-auto d-flex align-items-center px-2" style="font-size: 12px;">
                                 <div class="btn d-flex justify-content-around px-2 align-items-center me-1" id="addBtn">
@@ -10,7 +11,7 @@ const dataTableCustomBtn = `<div class="main-content buttons w-100 overflow-auto
                                     <span>Add new</span>
                                 </div>
 
-                                <div class="btn d-flex justify-content-around px-2 align-items-center me-1 actionBtn" id="csvShowBtn">
+                                <div class="btn d-flex justify-content-around px-2 align-items-center me-1 actionBtn" id="csvDLBtn">
                                     <div class="btnImg me-2" id="dlImg">
                                     </div>
                                     <span>Download Template</span>
@@ -244,6 +245,10 @@ $(document).ready(async function () {
     $("#csvUploadShowBtn").on("click", async function () {
         $('#uploadCsv').modal('show');
     });
+
+    $('#csvDLBtn').on('click', function () {
+        downloadToCSV(jsonArr);
+    });
 });
 
 function isTokenExist() {
@@ -334,7 +339,7 @@ async function ajax(endpoint, method, data, successCallback = () => { }, errorCa
 const datatables = {
     loadProdData: async () => {
         const prodData = await ajax('api/v2/product', 'GET', null, (response) => { // Success callback
-            console.log(response);
+            jsonArr = response.data;
             datatables.initProdDatatable(response);
             // ajaxMainData = response.data;
         }, (xhr, status, error) => { // Error callback
@@ -681,12 +686,21 @@ const initVS = {
         });
     }
 }
-
+let issueTable = `
+    <div class='mx-auto' style="font-size:14px">
+        <strong>Possible Issues:</strong>
+        <div class="mx-3">
+            <span> *Duplication of StockCodes.</span><br>
+            <span> *One or more fields contain invalid data.</span>
+        </div>
+    </div>`;
 
 var expectedtotalRows = 0;
 var actualtotalRows = 0;
+var iconResult;
+var errorFile = false;
 
-async function ajaxCall(method, formDataArray = null) {
+async function ajaxCall(method, formDataArray = null, id) {
     let formData = new FormData();
     formData.append('products', JSON.stringify(formDataArray));
 
@@ -705,30 +719,25 @@ async function ajaxCall(method, formDataArray = null) {
             expectedtotalRows += response.totalFileLength;
             actualtotalRows += response.successful;
 
-            var iconResult = `<span class="mdi mdi-alert-circle text-danger resultIcon"></span>`;
+            iconResult = `<span class="mdi mdi-alert-circle text-danger resultIcon"></span>`;
             var insertedResultColor = `text-danger`;
 
-            if (response.success) {
+            if (response.status_response == 1) {
                 iconResult = `<span class="mdi mdi-check-circle text-success resultIcon"></span>`
-                var incrementSuccess = parseInt($('#totalUploadSuccess').val(), 10) || 0; // Parse the value as an integer, default to 0 if NaN
-                incrementSuccess++;
-
-                $('#totalUploadSuccess').val(incrementSuccess);
-                $('#totalUploadSuccess').text(incrementSuccess);
-
                 insertedResultColor = 'text-success';
 
 
-            } else if (!response.success) {
-
+            } else if (response.status_response == 2) {
                 iconResult = `<span class="mdi mdi-alert-circle text-warning resultIcon"></span>`
                 insertedResultColor = 'text-warning';
+                console.log('warning')
             }
 
-            $("#fileStatus" + insertion).html(iconResult); 
-            $("#insertedStat" + insertion).html(`${response.successful} / ${response.totalFileLength}`).addClass(insertedResultColor);
-
-            if(fileCtr>0 && fileCtr==insertion){
+            $('#totalUploadSuccess').text(insertion);
+            $("#fileStatus" + id).html(iconResult); 
+            $("#insertedStat" + id).html(`${response.successful} / ${response.totalFileLength}`).addClass(insertedResultColor);
+            
+            if(fileCtrTotal>0 && fileCtrTotal==insertion){
                 console.log('1')
                 if(expectedtotalRows>0 && expectedtotalRows == actualtotalRows){
                     Swal.fire({
@@ -740,11 +749,12 @@ async function ajaxCall(method, formDataArray = null) {
                     var unsucc = expectedtotalRows-actualtotalRows;
                     Swal.fire({
                         title: "Warning!",
-                        html: 'Not all data inserted. Review uploaded CSV content.<br>' + unsucc + ' Products not inserted.',
+                        html: `Some data could not be inserted. <br>Please review the uploaded CSV file.<br><strong>${unsucc}</strong> products were not inserted.<br><br><br>${issueTable}`,
                         icon: "warning"
                     });
                 }
             }
+            datatables.loadProdData();
         },
         error: async function(xhr, subTotal, error) {
             Swal.fire({
@@ -757,57 +767,65 @@ async function ajaxCall(method, formDataArray = null) {
         }
     });
 }
+
 const uploadconfirmUpload = document.getElementById('uploadBtn2')
     .addEventListener('click', () => {
-        this.disabled = true;
         var appendTable = '';
+        insertion = 0;
+        fileCtrTotal = 0;
+        expectedtotalRows = 0;
+        actualtotalRows = 0; 
+        errorFile = false;
         // Get all the files selected in the file input
         var files = document.getElementById('formFileMultiple').files;
-    
-        Array.from(files).forEach(file => {
-            const checkExtension = file.name.split('.').pop().toLowerCase();
-            
-            // Check the extension
-            if( !['csv', 'pdf', 'xls', 'xlsx'].includes(checkExtension) ){
-                Swal.fire({
-                    icon: "error",
-                    title: "Review files",
-                    text: "Please select .csv files only",
-                });
-            }
-            fileCtr++;
-            appendTable += trNew(file.name, fileCtr);
-        });
 
-        $('#fileListTable').html(appendTable);
         $('#totalFiles').html(files.length);
         $('#totalFile').html(files.length);
+        fileCtrTotal = files.length;
         // Loop over each file and check the extension
-        Array.from(files).forEach(file => {
-            const fileExtension = file.name.split('.').pop().toLowerCase();
-            
-            if (fileExtension === 'csv') {
-                processCSVFile(file); // Process CSV
-            } else if (fileExtension === 'pdf') {
-                // 
-            } else if (['xls', 'xlsx'].includes(fileExtension)) {
-                // 
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Review files",
-                    text: ("Unsupported file type:", file.name),
-                });
+        for(let i=0; i < files.length; i++){
+            var fileExtension = files[i].name.split('.').pop().toLowerCase();
+
+            appendTable += trNew(files[i].name, i);
+            if(!['csv'].includes(fileExtension)){
+                setTimeout(function() {
+                    iconResult = `<span class="mdi mdi-alpha-x-circle text-danger resultIcon"></span>`;
+                    $("#fileStatus" + i).html(iconResult); 
+                }, 100);
+                errorFile = true;
             }
-        });
+
+            $('#fileListTable').html(appendTable);
+        }
+
+        if(!errorFile){
+            for(let i=0; i < files.length; i++){
+                var fileExtension = files[i].name.split('.').pop().toLowerCase();
+
+                appendTable += trNew(files[i].name, i);
+                if (fileExtension === 'csv') {
+                    processCSVFile(files[i], i); // Process CSV
+                    console.log('CSV file.')
+                }
+                // $('#fileListTable').html(appendTable);
+            }
+            $('#uploadBtn2').html('Upload');
+        } else{
+            Swal.fire({
+                icon: "error",
+                title: "Review files",
+                text: "Please select .csv files only",
+            });
+            $('#uploadBtn2').html('Reupload');
+        }
     });
 
-function processCSVFile(file) {
+function processCSVFile(file, ctr) {
     Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            ajaxCall('POST', results.data);
+            ajaxCall('POST', results.data, ctr);
         }
     });
 }
@@ -825,8 +843,23 @@ function trNew(fileName, indexId) {
                 </td>
                 <td id="fileStatus${indexId}" class="text-center col-1">       
                     <span class="loader">                                    
-                </span>              
+                    </span>              
                 </td>
-
             </tr>`;
+}
+
+function downloadToCSV(jsonArr){
+    console.log('clicked');
+    const csvData = Papa.unparse(jsonArr); // Convert JSON to CSV
+    var today = new Date().toISOString().split('T')[0];
+
+    // Create a blob and trigger download
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `ProductMaintenance_${today}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
 }

@@ -87,9 +87,15 @@ class ProdController extends DynamicSQLHelper
                     $notInserted++;
                 }
             }
-
+            if($notInserted > 0){
+                $retval = 2;
+            }
+            else{
+                $retval = 1;
+            }
             return response()->json([
                 'success' => true,
+                'status_response' => $retval,
                 'message' => 'Products created successfully',
                 'successful' => $inserted,
                 'unsuccessful' => $notInserted,
@@ -98,6 +104,7 @@ class ProdController extends DynamicSQLHelper
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
+                'status_response' => 0,
                 'message' => $e->getMessage(),
             ], 500);
         }
