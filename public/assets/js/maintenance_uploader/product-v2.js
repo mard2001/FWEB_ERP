@@ -103,7 +103,7 @@ $(document).ready(async function () {
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                         var $selectedStockCode = $('#StockCode').val();
-                        await ajax('api/v2/product/' + $selectedStockCode, 'POST', JSON.stringify({
+                        await ajax('api/prod/v2/product/' + $selectedStockCode, 'POST', JSON.stringify({
                             data: ProdModal.getData(),
                             _method: "PUT"
                         }), (response) => { // Success callback
@@ -175,7 +175,7 @@ $(document).ready(async function () {
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     var $selectedStockCode = $('#StockCode').val();
-                    ajax('api/v2/product/' + $selectedStockCode, 'POST', JSON.stringify({ 
+                    ajax('api/prod/v2/product/' + $selectedStockCode, 'POST', JSON.stringify({ 
                         _method: 'DELETE' 
                     }), (response) => { // Success callback
                         
@@ -214,7 +214,7 @@ $(document).ready(async function () {
     $("#ProductTable").on("click", "tbody tr", async function () {
         // selectedMain = ajaxMainData.find(item => item.id == $(this).attr('id'));
         const selectedStockCode = $(this).attr('id');
-        await ajax('api/v2/product/' + selectedStockCode, 'GET', null, (response) => { // Success callback
+        await ajax('api/prod/v2/product/' + selectedStockCode, 'GET', null, (response) => { // Success callback
 
             if (response.success == 1) {
                 ProdModal.viewMode(response.data);
@@ -338,7 +338,7 @@ async function ajax(endpoint, method, data, successCallback = () => { }, errorCa
 
 const datatables = {
     loadProdData: async () => {
-        const prodData = await ajax('api/v2/product', 'GET', null, (response) => { // Success callback
+        const prodData = await ajax('api/prod/v2/product', 'GET', null, (response) => { // Success callback
             jsonArr = response.data;
             datatables.initProdDatatable(response);
             // ajaxMainData = response.data;
@@ -506,8 +506,8 @@ const datatables = {
                     ],
                     columnDefs: [
                         // { className: "text-start", targets: [5, 6] },
-                        { className: "text-center", targets: [4, 5, 6, 12] },
-                        { className: "text-end", targets: [7, 8, 9, 10] },
+                        { className: "text-center", targets: [5, 6, 7, 13] },
+                        { className: "text-end", targets: [8, 9, 10, 11, 12] },
                     ],
                     scrollCollapse: true,
                     scrollY: '100%',
@@ -610,7 +610,7 @@ const ProdModal = {
         let ProdData = ProdModal.getData();
         console.log(ProdData);
 
-        await ajax('api/v2/product', 'POST', JSON.stringify({ data: ProdData }), (response) => { // Success callback
+        await ajax('api/prod/v2/product', 'POST', JSON.stringify({ data: ProdData }), (response) => { // Success callback
             if (response.success) {
 
                 datatables.loadProdData();
@@ -710,7 +710,7 @@ async function ajaxCall(method, formDataArray = null, id) {
     formData.append('products', JSON.stringify(formDataArray));
 
     return await $.ajax({
-        url: globalApi + 'api/v2/product/upload',
+        url: globalApi + 'api/prod/v2/product/upload',
         type: method,
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('api_token')
@@ -792,7 +792,7 @@ const uploadconfirmUpload = document.getElementById('uploadBtn2')
             var fileExtension = files[i].name.split('.').pop().toLowerCase();
 
             appendTable += trNew(files[i].name, i);
-            if(!['csv'].includes(fileExtension)){
+            if(!['csv','xlsx'].includes(fileExtension)){
                 setTimeout(function() {
                     iconResult = `<span class="mdi mdi-alpha-x-circle text-danger resultIcon"></span>`;
                     $("#fileStatus" + i).html(iconResult); 
@@ -811,6 +811,10 @@ const uploadconfirmUpload = document.getElementById('uploadBtn2')
                 if (fileExtension === 'csv') {
                     processCSVFile(files[i], i); // Process CSV
                     console.log('CSV file.')
+                }
+                else if(fileExtension === 'xlsx'){
+                    processExcelFile(files[i], i); // Process CSV
+                    console.log('Excel file.')
                 }
                 // $('#fileListTable').html(appendTable);
             }
@@ -834,6 +838,20 @@ function processCSVFile(file, ctr) {
         }
     });
 }
+
+function processExcelFile(file, ctr) {
+    readXlsxFile(file).then((rows) => {
+        let keys = rows[0]; // First row contains the keys
+        let result = rows.slice(1).map(row => {
+            return keys.reduce((obj, key, index) => {
+                obj[key] = row[index]; // Map key to corresponding value in row
+                return obj;
+            }, {});
+        });
+        ajaxCall('POST', result, ctr);
+    });
+}
+
 
 function trNew(fileName, indexId) {
     return `<tr id="fileRow${indexId}">

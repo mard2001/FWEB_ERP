@@ -78,8 +78,7 @@ Route::middleware(['auth:sanctum', DynamicDatabase::class])->group(function () {
     // });
 });
 
-Route::post('/v2/product/upload', [ProdController::class, 'storeBulk']);
-Route::apiResource('/v2/product', ProdController::class);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
@@ -90,6 +89,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/po-items/search-items/{po}', [POItemsController::class, 'searchByPO']);
     });
 
+    Route::prefix('prod')->group(function () {
+        Route::post('/v2/product/upload', [ProdController::class, 'storeBulk']);
+        Route::apiResource('/v2/product', ProdController::class);
+    });
     // Route::apiResource('/v2/product', ProdController::class);
 
     Route::apiResource('/product', ProductController::class);

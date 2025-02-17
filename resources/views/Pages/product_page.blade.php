@@ -2,6 +2,7 @@
 
 @section('html_title')
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
     <title>Product Maintenance</title>
 @endsection
 
