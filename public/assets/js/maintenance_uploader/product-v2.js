@@ -363,6 +363,7 @@ const datatables = {
                     },
                     columns: [
                         { data: 'StockCode' },
+                        { data: 'Brand' },
                         { data: 'Description' },
                         { data: 'LongDesc' },
                         { data: 'AlternateKey1' },
@@ -570,12 +571,15 @@ const ProdModal = {
     enable: (enable) => {
         $('#modalFields input[type="text"]').prop('disabled', !enable);
         $('#modalFields input[type="number"]').prop('disabled', !enable);
-
+        $('#modalFields textarea').prop('disabled', !enable);
     },
     fill: async (ProdData) => {
+        console.log(ProdData.LongDesc);
         $('#StockCode').val(ProdData.StockCode);
+        $('#Brand').val(ProdData.Brand);
         $('#priceWithVat').val(ProdData.priceWithVat);
         $('#Description').val(ProdData.Description);
+        $('#LongDesc').val(ProdData.LongDesc);
         $('#AlternateKey1').val(ProdData.AlternateKey1);
         $('#StockUom').val(ProdData.StockUom);
         $('#AlternateUom').val(ProdData.AlternateUom);
@@ -646,7 +650,7 @@ const ProdModal = {
         var data = {
             StockCode: $('#StockCode').val(),
             Description: $('#Description').val(),
-            LongDesc: $('#Description').val(),
+            LongDesc: $('#LongDesc').val(),
             AlternateKey1: $('#AlternateKey1').val(),
             StockUom: $('#StockUom').val(),
             AlternateUom: $('#AlternateUom').val(),
@@ -658,6 +662,7 @@ const ProdModal = {
             Volume: $('#Volume').val(),
             ProductClass: $('#ProductClass').val(),
             WarehouseToUse: $('#WarehouseToUse').val(),
+            Brand: $('#Brand').val(),
         }
 
         return data;

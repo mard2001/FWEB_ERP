@@ -128,6 +128,7 @@ class Product extends Model
         'SuppUnitFactor',
         // 'SuppUnitsMulDiv',
         // 'QmInspectionReq',
+        'Brand',
     ];
 
     protected $attributes = [

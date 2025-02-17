@@ -13,6 +13,7 @@
     <x-table id="ProductTable">
         <x-slot:td>
             <td class="col">StockCode</td>
+            <td class="col">Brand</td>
             <td class="col">Description</td>
             <td class="col">LongDesc</td>
             <td class="col">AlternateKey1</td>
@@ -36,9 +37,9 @@
                 <div class="col-sm-12 col-md-4 mt-1">
                     <input type="file" id="imageHolder" style="display:none;" accept="image/*">
 
-                    <div class="col mt-1 d-flex justify-content-center align-items-center px-3 py-2" style="height: 300px;">
-                        <div class="container h-100 w-75 my-3 p-2 d-flex justify-content-center align-items-center" style="border: 4px dashed rgba(45, 45, 45, 0.5); position: relative;">
-                            <img id="prdImg" class="border-0 p-2 h-auto w-100" style="max-width: 200px; max-height: 250px; object-fit: cover;  cursor: pointer;" src="./uploads/upload.png" alt="">
+                    <div class="col mt-1 d-flex justify-content-center align-items-center px-3 py-2" style="height: 200px;">
+                        <div class="h-100 w-100 my-3 p-2 d-flex justify-content-center align-items-center" style="border: 4px dashed rgba(45, 45, 45, 0.5); position: relative;">
+                            <img id="prdImg" class="border-0 p-2 h-auto w-100" style="max-width: 200px; max-height: 200px; object-fit: cover;  cursor: pointer;" src="./uploads/upload.png" alt="">
                         </div>
                     </div>
 
@@ -46,23 +47,33 @@
                         <button type="button" class="btn btn-sm btn-primary text-white" id="uploadImage" type="file">Choose Image</button>
                     </div>
                 </div>
-
-                <div class="col-sm-12 col-md-8 mt-1">
+                <div class="col-sm-12 col-md-8 mt-1 pt-4">
                     <div class="col mt-2">
                         <label for="StockCode">Product Stock Code</label>
                         <input disabled type="text" id="StockCode" name="StockCode" class="form-control bg-white" required placeholder="Stockcode">
                     </div>
                     <div class="col mt-2">
                         <label for="priceWithVat">Product Price</label>
-                        <input disabled type="number" id="priceWithVat" name="priceWithVat" class="form-control bg-white" required placeholder="Price">
+                        <input disabled type="number" id="priceWithVat" name="priceWithVat" class="form-control bg-white" required placeholder="Price" min=0>
                     </div>
                     <div class="col mt-2">
                         <label for="Description">Product Description</label>
                         <input disabled type="text" id="Description" name="Description" class="form-control bg-white" required placeholder="Description">
                     </div>
+                    
+                </div>
+                <div class="col-12">
+                    <div class="col mt-2">
+                        <label for="Brand">Brand</label>
+                        <input disabled type="text" id="Brand" name="Brand" class="form-control bg-white" required placeholder="Brand">
+                    </div>
                     <div class="col mt-2">
                         <label for="AlternateKey1">AlternateKey1</label>
-                        <input disabled type="text" id="AlternateKey1" name="AlternateKey1" class="form-control bg-white" required placeholder="Brand">
+                        <input disabled type="text" id="AlternateKey1" name="AlternateKey1" class="form-control bg-white" required placeholder="AlternateKey">
+                    </div>
+                    <div class="col mt-2">
+                        <label for="StockCode">Long Description</label>
+                        <textarea id="LongDesc" name="LongDesc" class="form-control bg-white" required placeholder="LongDescription"></textarea>
                     </div>
                     <div class="col mt-2">
                         <label for="StockUom">UOM</label>

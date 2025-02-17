@@ -18,7 +18,7 @@ class ProdController extends DynamicSQLHelper
         try {
             $purchaseOrders = Product::orderBy('StockCode','desc')
                                 ->select( 
-                                    'StockCode', 'Description', 'LongDesc', 'AlternateKey1', 'StockUom', 'AlternateUom', 'OtherUom', 'ConvFactAltUom', 'ConvFactOthUom', 'Mass', 'Volume', 'ProductClass', 'WarehouseToUse',
+                                    'StockCode', 'Description', 'LongDesc', 'AlternateKey1', 'StockUom', 'AlternateUom', 'OtherUom', 'ConvFactAltUom', 'ConvFactOthUom', 'Mass', 'Volume', 'ProductClass', 'WarehouseToUse', 'Brand'
                                 )->get();
 
             if ($purchaseOrders->isEmpty()) {
@@ -128,6 +128,7 @@ class ProdController extends DynamicSQLHelper
                 'Volume',
                 'ProductClass',
                 'WarehouseToUse',
+                'Brand',
             )->firstOrFail();
 
             $response = [

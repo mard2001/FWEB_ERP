@@ -1,5 +1,5 @@
 <div class="modal fade modal-lg text-dark" id="prodMainModal">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog">
         <div class="modal-content w-100 h-100">
             <div class="modal-body overflow-auto" style="height: auto; max-height: 75vh;">
                 <form id="modalFields">
