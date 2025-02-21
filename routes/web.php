@@ -89,9 +89,81 @@ Route::get('/print', function () {
     return page_view('PurchaseOrder-PDF');
 })->name('print');
 
+// PRINTING
+Route::get('/print/rr/testing', function () {
+    $data = [
+        'title' => 'RR Printing',
+        'date' => now()->format('Y-m-d'),
+        'distName'=> 'FUI Shell',
+        'supCode'=> 'VE-P0002',
+        'supName'=> 'Shell Pilipinas Corporation',
+        'supAdd'=> 'Fort Bonifacio 1635 Taguig City NCR, Fourth District Philippines Fort Bonifacio 1635 Taguig City NCR, Fourth District Philippines',
+        'supTIN'=> '000-164-757-00000',
+        'rrNo'=> '1600000711',
+        'rrDate'=> 'Nov. 18, 2024',
+        'rrRef'=> 'DN-512545212',
+        'rrStat1'=> 'Closed',
+        'rrStat2'=> 'Original', 
+        'prepared'=> 'Marvin Navarro', 
+        'checked'=> 'Jhunrey Lucero', 
+        'approved'=> 'Jhun Woogie Arrabis', 
+        'items' => []
+    ];
+
+    // Generate 40 items dynamically
+    for ($i = 1; $i <=19; $i++) {
+        $data['items'][] = [
+            'itemCode' => rand(100000000, 999999999),
+            'itemDesc' => 'Sample Item Description' . $i,
+            'itemQty' => rand(10, 500),
+            'itemOum' => ['CS', 'PC', 'IB'][array_rand(['CS', 'PC', 'IB'])],
+            'itemWhsCode'=> 'V' . rand(100, 999) . 'M' . rand(0, 9),
+            'itemUnitPrice' => round(rand(1000, 5000) + (rand(0, 99) / 100), 2),
+            'netVat' => round(rand(5000, 500000) + (rand(0, 99) / 100), 2),
+            'vat' => round(rand(500, 50000) + (rand(0, 99) / 100), 2),
+            'gross' => round(rand(10000, 600000) + (rand(0, 99) / 100), 2)
+        ];
+    }
+
+     // Convert array to object
+     $report = json_decode(json_encode($data));
+
+    return view('Pages.Printing.RR_printing', compact('report'));
+})->name('printrr');
+
+Route::get('/print/countsheet/testing', function () {
+    $data = [
+        'distributor' => 'Fast Distribution Corporation',
+        'branch' => 'CEBU Branch',
+        'warehouse'=> 'M1',
+        'date'=> now()->format('Y-m-d'),
+        'counted'=> 'Jhunrey Lucero', 
+        'confirmed'=> 'Jhun Woogie Arrabis', 
+        'items' => []
+    ];
+
+    // Generate 40 items dynamically
+    for ($i = 1; $i <=50; $i++) {
+        $data['items'][] = [
+            'stockCode' => rand(10000000, 99999999),
+            'itemDesc' => 'Sample Item Description' . $i,
+            'cases' => rand(10, 500),
+            'ib' => rand(10, 999),
+            'piece'=> rand(1, 999),
+        ];
+    }
+
+     // Convert array to object
+     $report = json_decode(json_encode($data));
+
+    return view('Pages.Printing.CountSheet_printing', compact('report'));
+})->name('printcountSheet');
+
+
 Route::get('/layout', function () {
     return page_view('layout');
 })->name('layout');
+
 
 // Route::get('/job/start', [ScanAndMoveFilesController::class, 'startJob'])->name('job.start');
 // Route::get('/job/stop', [ScanAndMoveFilesController::class, 'stopJob'])->name('job.stop');
