@@ -9,13 +9,13 @@ use App\Http\Controllers\api\OtpController;
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\Orders\POController;
 
+use App\Http\Controllers\api\Report\RRController;
 use App\Http\Controllers\Helpers\DynamicSQLHelper;
 use App\Http\Controllers\api\PDFUploaderController;
 use App\Http\Controllers\api\Product\ProdController;
 use App\Http\Controllers\api\ProductPricesController;
 use App\Http\Controllers\api\Orders\POItemsController;
 use App\Http\Controllers\api\SupplierShipToController;
-use App\Http\Controllers\api\MasterData\ProductController;
 
 // use App\Http\Controllers\api\Orders\InvoiceController;
 // use App\Http\Controllers\api\Orders\InvoiceItemsController;
@@ -23,17 +23,18 @@ use App\Http\Controllers\api\MasterData\ProductController;
 // use App\Http\Controllers\api\Orders\RRController;
 // use App\Http\Controllers\api\Orders\RRItemsController;
 
+use App\Http\Controllers\api\MasterData\ProductController;
 use App\Http\Controllers\api\MasterData\CustomerController;
+
+
+
 use App\Http\Controllers\api\MasterData\PATargetController;
-
-
-
 use App\Http\Controllers\api\MasterData\PickListController;
 use App\Http\Controllers\api\MasterData\SalesmanController;
+
+
+
 use App\Http\Controllers\api\MasterData\SupplierController;
-
-
-
 use App\Http\Controllers\api\MasterData\InventoryController;
 use App\Http\Controllers\api\MasterData\PAMasterListController;
 
@@ -93,7 +94,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/v2/product/upload', [ProdController::class, 'storeBulk']);
         Route::apiResource('/v2/product', ProdController::class);
     });
-    // Route::apiResource('/v2/product', ProdController::class);
+    
+    Route::prefix('report')->group(function () {
+        Route::apiResource('/v2/rr', RRController::class);
+    });
 
     Route::apiResource('/product', ProductController::class);
     Route::post('/product/bulk', [ProductController::class, 'storebulk']);

@@ -1,12 +1,12 @@
 @extends('Layout.layout')
 
 @section('html_title')
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-<title>Receiving Report</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <title>Receiving Report</title>
 @endsection
 
 @section('title_header')
-<x-header title="Receiving Report" />
+    <x-header title="Receiving Report" />
 @endsection
 
 @section('table')
@@ -45,21 +45,20 @@
     }
 </style>
 
-<x-table>
+<x-table id="rrTable">
     <x-slot:td>
-        <td class="col">SupplierCode</td>
-        <td class="col">SupplierTIN</td>
-        <td class="col">Address</td>
-        <td class="col">RRNo</td>
-        <td class="col">Date</td>
-        <td class="col">Reference</td>
-        <td class="col">Status</td>
-        <td class="col">Total</td>
-        <td class="col">PreparedBy</td>
-        <td class="col">FileName</td>
+        <td class="col">supCode</td>
+        <td class="col">supName</td>
+        <td class="col">supTIN</td>
+        <td class="col">supAdd</td>
+        <td class="col">rrNo</td>
+        <td class="col">rrDate</td>
+        <td class="col">rrRef</td>
+        <td class="col">rrStat1</td>
+        {{-- <td class="col">Total</td> --}}
+        <td class="col">prepared</td>
     </x-slot:td>
 </x-table>
-
 @endsection
 
 
@@ -81,381 +80,96 @@
     }
 </style>
 
-<x-form_modal>
+<x-rr_modal>
     <x-slot:form_fields>
-        <div class="row h-100 fs15">
-            <div class="col mt-1">
-
-                <div class="col mt-2">
-                    <div class="row">
-                        <div class="col">
-                            <label for="SupplierCode">Supplier Code</label>
-                            <input disabled type="text" id="SupplierCode" name="SupplierCode" class="form-control bg-white"
-                                required placeholder="Supplier Code">
-                        </div>
-
-                        <div class="col">
-                            <label for="Reference">Reference</label>
-                            <input disabled type="text" id="Reference" name="Reference" class="form-control bg-white"
-                                required placeholder="Reference">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col mt-2">
-                    <label for="SupplierName">Supplier Name</label>
-                    <input disabled type="text" id="SupplierName" name="SupplierName" class="form-control bg-white"
-                        required placeholder="Supplier Name" style="font-size: 14px"></input>
-                </div>
-
-                <div class="col mt-2">
-                    <label for="Address">Address</label>
-                    <textarea disabled id="Address" name="Address" class="form-control bg-white"
-                        required placeholder="Address" rows="2" style="resize: none; font-size: 14px"></textarea>
-                </div>
-
-                <div class="col mt-2">
-                    <div class="row">
-
-                        <div class="col">
-                            <label for="PreparedBy">Prepared By</label>
-                            <input disabled type="text" id="PreparedBy" name="PreparedBy" class="form-control bg-white"
-                                required placeholder="Prepared By" style="font-size: 14px"></input>
-                        </div>
-
-                        <div class="col">
-                            <label for="PrintedBy">Printed By</label>
-                            <input disabled type="text" id="PrintedBy" name="PrintedBy" class="form-control bg-white"
-                                required placeholder="Printed By">
-                        </div>
-
-                    </div>
-                </div>
-
-
+        <h2 class="text-center mb-5">Receiving Report</h2>
+        
+        <div class="row g-4">
+            <div class="col">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Supplier Code:</td>
+                            <th class="px-2"><span class="supCode" style="font-weight: 550"></span></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Supplier Name:</td>
+                            <th class="px-2"><span class="supName" style="font-weight: 550"></span></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Supplier TIN:</td>
+                            <th class="px-2"><span class="supTin" style="font-weight: 550"></span></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Address:</td>
+                            <th class="px-2"><span class="supAdd" style="font-weight: 550"></span></th>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-
-            <div class="col mt-1">
-
-                <div class="col mt-2">
-                    <div class="row">
-                        <div class="col">
-                            <label for="RRNo">RR Number</label>
-                            <input disabled type="text" id="RRNo" name="RRNo" class="form-control bg-white"
-                                required placeholder="RR Number">
-                        </div>
-
-                        <div class="col">
-                            <label for="SupplierTIN">Supplier TIN</label>
-                            <input disabled type="text" id="SupplierTIN" name="SupplierTIN" class="form-control bg-white"
-                                required placeholder="SupplierTIN">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col mt-2">
-                    <div class="row">
-                        <div class="col">
-                            <label for="Status">Status</label>
-                            <input disabled type="text" id="Status" name="Status" class="form-control bg-white"
-                                required placeholder="Status">
-                        </div>
-
-                        <div class="col">
-                            <label for="Total">Total</label>
-                            <input disabled type="text" id="Total" name="Total" class="form-control bg-white"
-                                required placeholder="Total">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col mt-3">
-                    <div class="row">
-                        <div class="col">
-                            <label for="CheckedBy">Checked By</label>
-                            <input disabled type="text" id="CheckedBy" name="CheckedBy" class="form-control bg-white"
-                                required placeholder="Checked By">
-                        </div>
-
-                        <div class="col">
-                            <label for="ApprovedBy">Approved By</label>
-                            <input disabled type="text" id="ApprovedBy" name="ApprovedBy" class="form-control bg-white"
-                                required placeholder="Approved By">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col mt-3">
-                    <label for="filename">PDF Filename</label>
-                    <input disabled type="text" id="filename" name="filename" class="form-control bg-white"
-                        required placeholder="PDF Filename">
-                </div>
-
-
-
-
+            <div class="col ">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">RR No.:</td>
+                            <th class="px-2"><span class="rrNo" style="font-weight: 550"></span></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Date:</td>
+                            <th class="px-2"><span class="date" style="font-weight: 550"></span></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Reference:</td>
+                            <th class="px-2"><span class="reference" style="font-weight: 550"></span></th>
+                        </tr>
+                        <tr>
+                            <td style="white-space: nowrap;">Status:</td>
+                            <th class="px-2"><span class="status" style="font-weight: 550"></span></th>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-
-        <div class="row mt-3">
-            <div class="d-flex justify-content-between align-items-center px-3">
-                <div>
-                    <label for="itemTables">Receiving Report Item List</label>
-                </div>
-                <div class="d-flex justify-content-end">
-                    <button class="btn btn-primary btn-sm text-white mx-1" id="addItems">Add Item</button>
-                    <button class="btn btn-danger btn-sm text-white mx-1" id="itemDelete" disabled>Delete Item</button>
-                </div>
-            </div>
-            <x-sub_table id="itemTables">
-                <x-slot:td>
-                    <td class="col">SKU</td>
-                    <td class="col">Decription</td>
-                    <td class="col">Quantity</td>
-                    <td class="col">UOM</td>
-                    <td class="col">WhsCode</td>
-                    <td class="col">UnitPrice</td>
-                    <td class="col">NetVat</td>
-                    <td class="col">Vat</td>
-                    <td class="col">Gross</td>
-                    <td class="col"></td>
-                </x-slot:td>
-            </x-sub_table>
-        </div>
+        <hr>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-center">No.</th>
+                    <th scope="col" class="text-center">Item</th>
+                    <th scope="col" class="text-center">Description</th>
+                    <th scope="col" class="text-center">Quantity</th>
+                    <th scope="col" class="text-center">OuM</th>
+                    <th scope="col" class="text-center">WhsCode</th>
+                    <th scope="col" class="text-center">Unit Price</th>
+                    <th scope="col" class="text-center">Net of Vat</th>
+                    <th scope="col" class="text-center">Vat</th>
+                    <th scope="col" class="text-center">Gross</th>
+                </tr>
+            </thead>
+            <tbody class="rrTbody">
+            </tbody>
+        </table>
     </x-slot:form_fields>
-</x-form_modal>
-
-<div class="modal fade modal modal-lg text-dark" id="itemModal">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content w-100 h-100">
-            <div class="modal-body" style="height: auto; max-height: 75vh;">
-                <form id="itemModalFields">
-                    <div class="row h-100 fs15">
-                        <div class="col mt-1">
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="SKU">SKU</label>
-                                        <div disabled type="text" id="SKU" name="SKU" class="form-control bg-white p-0"
-                                            required placeholder="Product Code"> </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="Decription">Decription</label>
-                                        <input disabled type="text" id="Decription" name="Decription" class="form-control bg-white"
-                                            required placeholder="Decription">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="Quantity">Quantity</label>
-                                        <input disabled type="number" id="Quantity" name="Quantity" class="form-control bg-white"
-                                            required placeholder="Quantity">
-                                    </div>
-
-                                    <div class="col">
-                                        <label for="UOM">UOM</label>
-                                        <input disabled type="text" id="UOM" name="UOM" class="form-control bg-white"
-                                            placeholder="UOM">
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col mt-1">
-
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="WhsCode">Warehouse Code</label>
-                                        <input disabled type="text" id="WhsCode" name="WhsCode" class="form-control bg-white"
-                                            required placeholder="Warehouse Code">
-                                    </div>
-
-                                    <div class="col">
-                                        <label for="UnitPrice">Unit Price</label>
-                                        <input disabled type="number" id="UnitPrice" name="UnitPrice" class="form-control bg-white"
-                                            required placeholder="Unit Price">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="row">
-
-                                    <div class="col">
-                                        <label for="NetVat">NetVat</label>
-                                        <input disabled type="number" id="NetVat" name="NetVat" class="form-control bg-white"
-                                            required placeholder="NetVat">
-                                    </div>
-
-
-                                    <div class="col">
-                                        <label for="Vat">Vat</label>
-                                        <input disabled type="number" id="Vat" name="Vat" class="form-control bg-white"
-                                            required placeholder="Vat">
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="col">
-                                    <label for="Gross">Gross</label>
-                                    <input disabled type="number" id="Gross" name="Gross" class="form-control bg-white"
-                                        required placeholder="Gross">
-                                </div>
-
-                            </div>
-
-
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-info btn-info btn-sm text-white" id="itemSaveEdit">Edit
-                    details</button>
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade modal modal-lg text-dark" id="deliveriesModal">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content w-100 h-100">
-            <div class="modal-body overflow-auto" style="height: auto; max-height: 75vh;">
-                <form id="deliveriesModalFields">
-                    <div class="row h-100 fs15">
-                        <div class="col mt-1">
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="SKU">SKU</label>
-                                        <input disabled type="text" id="SKU" name="SKU" class="form-control bg-white"
-                                            required placeholder="Product Code">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="Decription">Decription</label>
-                                        <input disabled type="text" id="Decription" name="Decription" class="form-control bg-white"
-                                            required placeholder="Decription">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="Quantity">Quantity</label>
-                                        <input disabled type="number" id="Quantity" name="Quantity" class="form-control bg-white"
-                                            required placeholder="Quantity">
-                                    </div>
-
-                                    <div class="col">
-                                        <label for="UOM">UOM</label>
-                                        <input disabled type="text" id="UOM" name="UOM" class="form-control bg-white"
-                                            placeholder="UOM">
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col mt-1">
-
-
-                            <div class="col mt-2">
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="WhsCode">Warehouse Code</label>
-                                        <input disabled type="text" id="WhsCode" name="WhsCode" class="form-control bg-white"
-                                            required placeholder="Warehouse Code">
-                                    </div>
-
-                                    <div class="col">
-                                        <label for="UnitPrice">Unit Price</label>
-                                        <input disabled type="number" id="UnitPrice" name="UnitPrice" class="form-control bg-white"
-                                            required placeholder="Unit Price">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="row">
-
-                                    <div class="col">
-                                        <label for="NetVat">NetVat</label>
-                                        <input disabled type="number" id="NetVat" name="NetVat" class="form-control bg-white"
-                                            required placeholder="NetVat">
-                                    </div>
-
-
-                                    <div class="col">
-                                        <label for="Vat">Vat</label>
-                                        <input disabled type="number" id="Vat" name="Vat" class="form-control bg-white"
-                                            required placeholder="Vat">
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="col mt-2">
-                                <div class="col">
-                                    <label for="Gross">Gross</label>
-                                    <input disabled type="number" id="Gross" name="Gross" class="form-control bg-white"
-                                        required placeholder="Gross">
-                                </div>
-
-                            </div>
-
-
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-info btn-info btn-sm text-white" id="deliveriesSaveEdit">Edit
-                    details</button>
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+</x-rr_modal>
 
 @endsection
 
 @section('pagejs')
-
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script> -->
 
-<script src="{{ asset('assets/js/maintenance_uploader/receiving_report.js') }}"></script>
-<script>
+<script src="{{ asset('assets/js/maintenance_uploader/rr.js') }}"></script>
+{{-- <script>
     $(document).ready(async function() {
         $("#uploadBtn").off("click", modalUploader);
 
@@ -709,6 +423,6 @@
 
 
     });
-</script>
+</script> --}}
 
 @endsection
