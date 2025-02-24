@@ -3,48 +3,74 @@
 namespace App\Services;
 
 use App\Models\Product;
-use App\Models\ProductPrices;
+// use App\Models\ProductPrices;
+use App\Models\Orders\POItems;
 
 class ProductCalculator
 {
-    public function calculateResult($id)
-    {
-        $test = $this->convertUOMIntoPieces('1515151', 15);
-    }
 
-    public function getTotalQtyInPCS($sku, $quantity, $uom)
+    public function transformQuantitiesAndUnits($sku, $uoms)
     {
 
         try {
-            $product = Product::where('StockCode', $sku)->first();
+
+            $product = Product::where('StockCode', $sku)->firstOrFail();
 
             $ConvFactAltUom = $product->ConvFactAltUom;
             $ConvFactOthUom = $product->ConvFactOthUom;
+            $totalInPieces = 0;
 
-            $StockUom = $product->StockUom;
-            $AlternateUom = $product->AlternateUom;
-            $otherUOM = $product->OtherUom;
+            $itemUoms = [$product->StockUom, $product->AlternateUom, $product->OtherUom];
+            $keepAvailableUomOnly = array_intersect_key($uoms, array_flip($itemUoms));
 
-            $totalInPieces = 0;            
+            foreach ($keepAvailableUomOnly as $key => $uom) {
 
-
-            if (strcasecmp($uom, "PC") === 0) {
-                $totalInPieces = $quantity;
-            } else if (strcasecmp($uom, "IB") === 0) {
-                $totalInPieces = ($ConvFactAltUom / $ConvFactOthUom) * $quantity;
-            } else if (strcasecmp($uom, "CS") === 0) {
-                $totalInPieces = $quantity * $ConvFactAltUom;
+                if (strcasecmp($key, "PC") === 0) {
+                    $totalInPieces = $totalInPieces + $uom;
+                } else if (strcasecmp($key, "IB") === 0) {
+                    $totalInPieces = $totalInPieces + ($ConvFactAltUom / $ConvFactOthUom) * $uom;
+                } else if (strcasecmp($key, "CS") === 0) {
+                    $totalInPieces = $totalInPieces + $uom * $ConvFactAltUom;
+                }
             }
+
+
+            $convertIntoLargestUom = $this->convertProductToLargesttUnit($itemUoms, $totalInPieces, $ConvFactAltUom, $ConvFactOthUom);
+            $convertIntoLargestUom['QuantityInPieces'] = floor($totalInPieces);
+            // dd($convertIntoLargestUom);
 
             return [
                 'success' => true,
-                'result' =>  floor($totalInPieces),
+                'result' =>   $convertIntoLargestUom,
             ];
         } catch (\Exception $e) {
 
             return [
                 'success' => false,
                 'result' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function convertProductToLargesttUnit($ProductUoms, $totalQuantity, $ConvFactAltUom, $ConvFactOthUom)
+    {
+
+        if (in_array('CS', $ProductUoms)) {
+
+            return [
+                'uom' => 'CS',
+                'convertedToLargestUnit' => $totalQuantity / $ConvFactAltUom
+            ];
+        } else if (in_array('IB', $ProductUoms)) {
+
+            return [
+                'uom' => 'IB',
+                'convertedToLargestUnit' => $totalQuantity / ($ConvFactAltUom / $ConvFactOthUom)
+            ];
+        } else  if (in_array('PC', $ProductUoms)) {
+            return [
+                'uom' => 'PC',
+                'convertedToLargestUnit' => $totalQuantity
             ];
         }
     }
