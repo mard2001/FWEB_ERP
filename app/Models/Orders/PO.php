@@ -2,10 +2,12 @@
 
 namespace App\Models\Orders;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use App\Observers\POObserver;
+use App\Models\ReceivingRHeader;
+use App\Models\Supplier;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PO extends Model
 {
@@ -72,4 +74,13 @@ class PO extends Model
         
     }
 
+    public function posupplier()
+    {
+        return $this->belongsTo(Supplier::class, 'SupplierCode', 'SupplierCode');
+    }
+
+    public function receivingHeader()
+    {
+        return $this->belongsTo(ReceivingRHeader::class, 'RRNo', 'RRNo');
+    }
 }

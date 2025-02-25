@@ -49,13 +49,13 @@
     <x-slot:td>
         <td class="col">supCode</td>
         <td class="col">supName</td>
-        <td class="col">supTIN</td>
+        {{-- <td class="col">supTIN</td> --}}
         <td class="col">supAdd</td>
         <td class="col">rrNo</td>
+        <td class="col">Total</td>
         <td class="col">rrDate</td>
         <td class="col">rrRef</td>
         <td class="col">rrStat1</td>
-        {{-- <td class="col">Total</td> --}}
         <td class="col">prepared</td>
     </x-slot:td>
 </x-table>
@@ -82,7 +82,7 @@
 
 <x-rr_modal>
     <x-slot:form_fields>
-        <h2 class="text-center mb-5">Receiving Report</h2>
+        {{-- <h2 class="text-center mb-5">Receiving Report</h2> --}}
         
         <div class="row g-4">
             <div class="col">
@@ -139,7 +139,7 @@
             </div>
         </div>
         <hr>
-        <table class="table">
+        <table class="table" style="font-size: 13px">
             <thead>
                 <tr>
                     <th scope="col" class="text-center">No.</th>
@@ -163,10 +163,14 @@
 @endsection
 
 @section('pagejs')
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script> -->
+<script type="text/javascript" src="{{ asset('assets/js/vendor/virtual-select.min.js') }}"></script>
 
 <script src="{{ asset('assets/js/maintenance_uploader/rr.js') }}"></script>
 {{-- <script>

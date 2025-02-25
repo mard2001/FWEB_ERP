@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\Report\RRController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScanAndMoveFilesController;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyToken;
@@ -128,8 +129,19 @@ Route::get('/print/rr/testing', function () {
      // Convert array to object
      $report = json_decode(json_encode($data));
 
-    return view('Pages.Printing.RR_printing', compact('report'));
-})->name('printrr');
+    return view('Pages.Printing.RR_printing_test', compact('report'));
+})->name('printrrtest');
+
+// Route::get('/print/rr/', function () {
+
+//     return view('Pages.Printing.RR_printing');
+// })->name('printrr');
+
+// Route::get('/print/rr/', function () {
+//     return view('Pages.Printing.RR_printing'); // Change to the actual view you want to show
+// })->name('printrr');
+
+Route::get('/print/rr/', [RRController::class, 'printPage'])->name('web.print');
 
 Route::get('/print/countsheet/testing', function () {
     $data = [

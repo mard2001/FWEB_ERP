@@ -31,17 +31,16 @@ $(document).ready(async function () {
     GlobalUX();
 
     await datatables.loadRRData();
-    // await initVS.liteDataVS();
+    await initVS.liteDataVS();
 
     $("#rrTable").on("click", "tbody tr", async function () {
         const selectedRRCode = $(this).attr('id');
         await ajax('api/report/v2/rr/' + selectedRRCode, 'GET', null, (response) => { // Success callback
-            console.log(response);
             if (response.success == 1) {
-                // RRModal.viewMode(response.data);
-                // selectedMain = response.data;
-                var tempRes = jsonArr.filter(item => item.RRNo == selectedRRCode)
-                RRModal.viewMode(tempRes[0]);
+                RRModal.viewMode(response.data);
+                selectedMain = response.data[0];
+                // var tempRes = jsonArr.filter(item => item.RRNo == selectedRRCode)
+                // RRModal.viewMode(tempRes[0]);
             } else {
                 Swal.fire({
                     title: "Opppps..",
@@ -61,12 +60,31 @@ $(document).ready(async function () {
 
             }
         });
-
-
     });
 
     $('#rrPrintPage').on('click', async function () {
-        window.open("http://127.0.0.1:8000/print/rr/testing", "_blank");
+        console.log('printClicked');
+        sessionStorage.setItem('printingRRCode', selectedMain.RRNo);
+        // window.open('/print/rr/'+selectedMain.RRNo, '_blank');
+        
+        $.ajax({
+            url: "/api/redirect",
+            type: "POST",
+            data: { RRNum: selectedMain.RRNo },
+            success: function(response) {
+                if (response.success) {
+                    console.log(response)
+                    window.open('/print/rr', '_blank'); // Open without RRNum in URL
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+            }
+        });
+    });
+
+    $('#csvDLBtn').on('click', function () {
+        downloadToCSV(jsonArr);
     });
 });
 
@@ -179,21 +197,39 @@ const datatables = {
                         }
                     },
                     columns: [
-                        { data: 'SupplierCode',  title: 'Supplier Code' },
-                        { data: 'SupplierName',  title: 'Supplier Name' },
-                        { data: 'SupplierTIN',  title: 'Supplier TIN' },
-                        { data: 'Address',  title: 'Supplier Address' },
+                        { data: 'poincluded.posupplier.SupplierCode',  title: 'Supplier Code' },
+                        { data: 'poincluded.posupplier.SupplierName',  title: 'Supplier Name' },
+                        // { data: 'SupplierTIN',  title: 'Supplier TIN' },
+                        { data: 'poincluded.posupplier.CompleteAddress',  title: 'Supplier Address' },
                         { data: 'RRNo',  title: 'RR No.' },
-                        { data: 'Date',  title: 'RR Date' },
-                        { data: 'Reference',  title: 'RR Reference' },
-                        { data: 'Status',  title: 'RR Status' },
-                        { data: 'PreparedBy',  title: 'Prepared By' },
-                        // { data: 'Total' },
+                        { data: 'Total', title: 'Total',  
+                            render: function(data, type, row) {
+                                if (!data || isNaN(data)) return '0';
+                                return parseFloat(data) !== 0 ? parseFloat(data).toLocaleString('en-US') : '0';
+                            }
+                        },
+                        { data: 'RRDATE',  title: 'Date',
+                            render: function(data, type, row) {
+                                if (!data) return ''; 
+                
+                                let date = new Date(data);
+                                return date.toLocaleDateString('en-US', {
+                                    year: 'numeric', month: '2-digit', day: '2-digit'
+                                });
+                            } 
+                        },
+                        { data: 'Reference',  title: 'Reference'},
+                        { data: 'Status',  title: 'Status',
+                            render: function(data, type, row) {
+                                return data == 1 ? "<span style='color:#22bb33;'>Active</span>" : "<span style='color:#bb2124;'>Deleted</span>";
+                            } 
+                        },
+                        { data: 'RECEIVEDBY',  title: 'Received By' },
                     ],
                     columnDefs: [
-                        // { className: "text-start", targets: [ ] },
-                        { className: "text-center", targets: [2,4,7] },
-                        // { className: "text-end", targets: [ ] },
+                        { className: "text-start", targets: [ 0, 1, 2, 6 ] },
+                        { className: "text-center", targets: [ 3, 7 ] },
+                        { className: "text-end", targets: [ 4 ] },
                     ],
                     scrollCollapse: true,
                     scrollY: '100%',
@@ -213,14 +249,6 @@ const datatables = {
                         $(this.api().table().container()).find('.dt-scroll-body').addClass('rmvBorder');
                         $(this.api().table().container()).find('.dt-layout-table').addClass('btmdtborder');
 
-                        // Select the label element and replace it with a div
-                        // $('.dt-search label').replaceWith(function () {
-                        //     return $('<div>', {
-                        //         html: $(this).html(),
-                        //         id: $(this).attr('id'),
-                        //         class: $(this).attr('class')
-                        //     });
-                        // });
                         const dtlayoutTE = $('.dt-layout-cell.dt-end').first();
                         dtlayoutTE.addClass('d-flex justify-content-end');
                         dtlayoutTE.prepend('<div id="filterPOVS" name="filter" style="width: 200px" class="form-control bg-white p-0 mx-1">Filter</div>');
@@ -248,30 +276,34 @@ const RRModal = {
         var total = 0;
         var tbody = $(".rrTbody");
         tbody.empty();
-        // $('#StockCode').val(RRModal.StockCode);
-        $('.supCode').html(RRModalData.SupplierCode);
-        $('.supName').html(RRModalData.SupplierName);
-        $('.supTin').html(RRModalData.SupplierTIN);
-        $('.supAdd').html(RRModalData.Address);
+        // $('#StockCode').val(RRModal.SupplierCode);
+        $('.supCode').html(RRModalData.poincluded.SupplierCode);
+        $('.supName').html(RRModalData.poincluded.posupplier.SupplierName);
+        $('.supTin').html('---');
+        $('.supAdd').html(RRModalData.poincluded.posupplier.CompleteAddress);
         $('.rrNo').html(RRModalData.RRNo);
-        $('.date').html(RRModalData.Date);
+        $('.date').html(RRModalData.RRDATE);
         $('.reference').html(RRModalData.Reference);
-        $('.status').html(RRModalData.Status);
+        $('.status').html(RRModalData.Status == 1 ? "Active" : "Deleted");
 
-        (RRModalData.items).forEach((item, index) => {
-            total += item["Gross"];
+        // <td class="text-center">${parseFloat(item["convertedQuantity"]).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        // <td class="text-center">${item["convertedUOM"]}</td>
+
+        (RRModalData.rrdetails).forEach((item, index) => {
+            total += parseFloat(item["Gross"]) || 0;
+            // Feb, 24 = Typo naming in Description Column, tblInvRRDetails table;
             var tr = `
                 <tr>
                     <th scope="row" class="text-center">${index + 1}</th>
                     <td>${item["SKU"]}</td>
-                    <td>${item["Description"]}</td>
-                    <td class="text-center">${item["Quantity"]}</td>
-                    <td class="text-center">${item["UOM"]}</td>
+                    <td>${item.product["Description"]}</td>
+                    <td class="text-center">${parseFloat(item.convertedQuantity["convertedToLargestUnit"]).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="text-center">${item.convertedQuantity["uom"]}</td>
                     <td>${item["WhsCode"]}</td>
-                    <td class="text-end">${item["UnitPrice"].toLocaleString('en-US')}</td>
-                    <td class="text-end">${item["NetVat"].toLocaleString('en-US')}</td>
-                    <td class="text-end">${item["Vat"].toLocaleString('en-US')}</td>
-                    <td class="text-end">${item["Gross"].toLocaleString('en-US')}</td>
+                    <td class="text-end">${parseFloat(item["UnitPrice"]).toLocaleString('en-US')}</td>
+                    <td class="text-end">${parseFloat(item["NetVat"]).toLocaleString('en-US')}</td>
+                    <td class="text-end">${parseFloat(item["Vat"]).toLocaleString('en-US')}</td>
+                    <td class="text-end">${parseFloat(item["Gross"]).toLocaleString('en-US')}</td>
                 </tr>`;
             
             tbody.append(tr);
@@ -294,7 +326,46 @@ const RRModal = {
             tbody.append(tr); // Append row to table
     },
     viewMode: async (RRData) => {
-        RRModal.fill(RRData);
+        RRModal.fill(RRData[0]);
         RRModal.show();
     },
+}
+
+function downloadToCSV(jsonArr){
+    console.log('clicked');
+    const csvData = Papa.unparse(jsonArr); // Convert JSON to CSV
+    var today = new Date().toISOString().split('T')[0];
+
+    // Create a blob and trigger download
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `ReceivingReports_${today}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+}
+
+const initVS = {
+    liteDataVS: async () => {
+        // Initialize VirtualSelect for ship via
+        VirtualSelect.init({
+            ele: '#filterPOVS',                   // Attach to the element
+            options: [
+                // { label: "", value: null },
+                // { label: "Active", value: 1 },
+                // { label: "Deleted", value: 0 },
+
+            ], 
+            multiple: true, 
+            hideClearButton: true, 
+            search: false,
+            maxWidth: '100%', 
+            additionalClasses: 'rounded',
+            additionalDropboxClasses: 'rounded',
+            additionalDropboxContainerClasses: 'rounded',
+            additionalToggleButtonClasses: 'rounded',
+        });
+    }
 }

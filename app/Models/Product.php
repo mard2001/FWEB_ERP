@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ReceivingRDetails;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
@@ -29,6 +30,8 @@ class Product extends Model
     //     'time_stamp',
     //     'buyingAccounts',
     // ];
+
+    
 
     protected $fillable = [
         'StockCode',
@@ -176,5 +179,15 @@ class Product extends Model
         // 'AltUnitChar' => 0,
         'BatchBill' => 'N',
     ];
+
+    protected $casts = [
+        'SKU' => 'string',
+        'StockCode' => 'string',
+    ];
+
+    public function rrdetails()
+    {
+        return $this->hasMany(ReceivingRDetails::class, 'SKU', 'StockCode');
+    }
 }
 

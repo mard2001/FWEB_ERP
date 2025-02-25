@@ -79,7 +79,7 @@ Route::middleware(['auth:sanctum', DynamicDatabase::class])->group(function () {
     // });
 });
 
-
+Route::post('/redirect', [RRController::class, 'setRRNum']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
@@ -97,6 +97,8 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::prefix('report')->group(function () {
         Route::apiResource('/v2/rr', RRController::class);
+        Route::get('/print/rr/{RRNum}', [RRController::class, 'generateRRPDF'])->name('printing.rr');
+
     });
 
     Route::apiResource('/product', ProductController::class);

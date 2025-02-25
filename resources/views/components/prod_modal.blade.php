@@ -1,6 +1,9 @@
 <div class="modal fade modal-lg text-dark" id="prodMainModal">
     <div class="modal-dialog">
         <div class="modal-content w-100 h-100">
+            <div class="modal-header py-0">
+                <p class="text-nowrap text-primary text-center mx-auto my-0" style="font-size: 2rem; font-weight: bold;">PRODUCT</p>
+            </div>
             <div class="modal-body overflow-auto" style="height: auto; max-height: 75vh;">
                 <form id="modalFields">
                     {{ $form_fields }}

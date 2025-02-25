@@ -52,28 +52,31 @@ class ProductCalculator
         }
     }
 
-    public function convertProductToLargesttUnit($ProductUoms, $totalQuantity, $ConvFactAltUom, $ConvFactOthUom)
+    public function convertProductToLargesttUnit(string $ProductUoms, float $totalQuantity, float $ConvFactAltUom, float $ConvFactOthUom)
     {
-
-        if (in_array('CS', $ProductUoms)) {
-
+        if ($ProductUoms == 'CS') {
             return [
                 'uom' => 'CS',
                 'convertedToLargestUnit' => $totalQuantity / $ConvFactAltUom
             ];
-        } else if (in_array('IB', $ProductUoms)) {
-
+        } elseif ($ProductUoms == 'IB') {
             return [
                 'uom' => 'IB',
                 'convertedToLargestUnit' => $totalQuantity / ($ConvFactAltUom / $ConvFactOthUom)
             ];
-        } else  if (in_array('PC', $ProductUoms)) {
+        } elseif ($ProductUoms == 'PC') {
             return [
                 'uom' => 'PC',
                 'convertedToLargestUnit' => $totalQuantity
             ];
+        } else {
+            return [
+                'uom' => 'Unknown',
+                'convertedToLargestUnit' => $totalQuantity
+            ];
         }
     }
+
 
     private function ItemPackingQuantity($sku, $quantity)
     {
