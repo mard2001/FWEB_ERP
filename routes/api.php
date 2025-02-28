@@ -13,9 +13,9 @@ use App\Http\Controllers\api\Report\RRController;
 use App\Http\Controllers\Helpers\DynamicSQLHelper;
 use App\Http\Controllers\api\PDFUploaderController;
 use App\Http\Controllers\api\Product\ProdController;
+use App\Http\Controllers\api\Report\CountController;
 use App\Http\Controllers\api\ProductPricesController;
 use App\Http\Controllers\api\Orders\POItemsController;
-use App\Http\Controllers\api\SupplierShipToController;
 
 // use App\Http\Controllers\api\Orders\InvoiceController;
 // use App\Http\Controllers\api\Orders\InvoiceItemsController;
@@ -23,17 +23,18 @@ use App\Http\Controllers\api\SupplierShipToController;
 // use App\Http\Controllers\api\Orders\RRController;
 // use App\Http\Controllers\api\Orders\RRItemsController;
 
+use App\Http\Controllers\api\SupplierShipToController;
 use App\Http\Controllers\api\MasterData\ProductController;
+
+
+
 use App\Http\Controllers\api\MasterData\CustomerController;
-
-
-
 use App\Http\Controllers\api\MasterData\PATargetController;
 use App\Http\Controllers\api\MasterData\PickListController;
+
+
+
 use App\Http\Controllers\api\MasterData\SalesmanController;
-
-
-
 use App\Http\Controllers\api\MasterData\SupplierController;
 use App\Http\Controllers\api\MasterData\InventoryController;
 use App\Http\Controllers\api\MasterData\PAMasterListController;
@@ -80,6 +81,9 @@ Route::middleware(['auth:sanctum', DynamicDatabase::class])->group(function () {
 });
 
 Route::post('/redirect', [RRController::class, 'setRRNum']);
+Route::post('/setCNTHeader', [CountController::class, 'setCNTHeader']);
+Route::get('/remCNTHeader', [CountController::class, 'remCNTHeader']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
@@ -97,8 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::prefix('report')->group(function () {
         Route::apiResource('/v2/rr', RRController::class);
-        Route::get('/print/rr/{RRNum}', [RRController::class, 'generateRRPDF'])->name('printing.rr');
-
+        Route::apiResource('/v2/countsheet', CountController::class);
     });
 
     Route::apiResource('/product', ProductController::class);

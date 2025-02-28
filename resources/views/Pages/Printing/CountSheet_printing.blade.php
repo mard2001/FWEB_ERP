@@ -16,7 +16,7 @@
         border: none;
         table-layout: fixed; /* Ensures the columns respect assigned widths */
         width: 100%; /* Makes table responsive */
-        height: 30px !important; /* Ensure at least 2 lines */
+        height: 33px !important; /* Ensure at least 2 lines */
         white-space: normal;
         word-wrap: break-word;
         overflow: hidden;
@@ -24,6 +24,7 @@
     }
     .countSht-info tbody tr td{
         border: 2px solid #000 !important;
+
     }
 
     @media print {
@@ -60,13 +61,14 @@
 
 
 <body>
+
     @php
         $maxRowsPerPage = 27;  
         $rowCount = 0; 
-        $totalPages = ceil(count($report->items)/$maxRowsPerPage);
+        $totalPages = ceil(count($report)/$maxRowsPerPage);
         $pageNumber = 1;
     @endphp
-    @foreach ($report->items as $index => $item)
+    @foreach ($report as $item)
         @if ($rowCount % $maxRowsPerPage == 0)
             @if ($rowCount > 0)
                 <div style="page-break-before: always;"></div>
@@ -78,12 +80,12 @@
                 <h5>COUNT SHEET</h5>
                 <div class="row">
                     <div class="col d-flex flex-column mb-3">
-                        <span>{{ $report->distributor }}</span>
-                        <span>{{ $report->branch }}</span>
+                        <span>Fast Distribution Corporation</span>
+                        {{-- <span>{{ $report->branch }}</span> --}}
                     </div>
                     <div class="col d-flex flex-column mb-3">
-                        <span>{{ $report->warehouse }}</span>
-                        <span>{{ $report->date }}</span>
+                        {{-- <span>{{ $report->warehouse }}</span> --}}
+                        {{-- <span>{{ $report->date }}</span> --}}
                     </div>
                 </div>
             </div>
@@ -93,6 +95,7 @@
                         <th scope="col" style="width: 5%;"> </th>
                         <th scope="col" style="width: 15%;">Stock Code</th>
                         <th scope="col" style="width: 50%;">Description</th>
+                        {{-- <th scope="col" style="width: 10%;">MNLCNT</th> --}}
                         <th scope="col" style="width: 10%;">Cases</th>
                         <th scope="col" style="width: 10%;">IB</th>
                         <th scope="col" style="width: 10%;">Pcs</th>
@@ -101,12 +104,19 @@
                 <tbody>
         @endif                   
                     <tr>
-                        <td style="width: 5%;">{{ $rowCount }}</td>
-                        <td style="width: 15%;">{{ $item->stockCode }}</td>
-                        <td style="width: 50%;">{{ $item->itemDesc }}</td>
-                        <td style="width: 10%;">{{ $item->cases }}</td>
-                        <td style="width: 10%;">{{ $item->ib }}</td>
-                        <td style="width: 10%;">{{ $item->piece }}</td>
+                        <td style="width: 5%;" class="text-center">{{ $rowCount+1 }}</td>
+                        <td style="width: 15%;">{{ $item['StockCode'] ?? '' }}</td>
+                        <td style="width: 50%;">{{ $item['Description']?? '' }}</td>
+                        {{-- <td style="width: 10%;">{{ $item['MNLCOUNT']?? '' }}</td> --}}
+                        <td style="width: 10%;" class="text-center">
+                            {{ isset($item['ConvResult']['inCS']) && $item['ConvResult']['inCS'] > 0 ? $item['ConvResult']['inCS'] : '' }}
+                        </td>
+                        <td style="width: 10%;" class="text-center">
+                            {{ isset($item['ConvResult']['inIB']) && $item['ConvResult']['inIB'] > 0 ? $item['ConvResult']['inIB'] : '' }}
+                        </td>
+                        <td style="width: 10%;" class="text-center">
+                            {{ isset($item['ConvResult']['inPC']) && $item['ConvResult']['inPC'] > 0 ? $item['ConvResult']['inPC'] : '' }}
+                        </td>
                     </tr>
                     @php
                         $rowCount++; // Increment row count
@@ -116,7 +126,8 @@
                 </tbody>
             </table>
             @if ($pageNumber != $totalPages )
-                <div class="footerText d-flex justify-content-between mt-4">
+                <span style="font-size: 9px;">*Report continues on the next page...</span>
+                {{-- <div class="footerText d-flex justify-content-between mt-4">
                     <div class="countedDiv">
                         COUNTED BY:
                         <span class="counter">{{ $report->counted }}</span>
@@ -132,7 +143,7 @@
                         CONFIRMED BY:
                         <span class="confirmer">{{ $report->confirmed }}</span>
                     </div>
-                </div>
+                </div> --}}
             @endif
         @endif   
     @endforeach
@@ -159,7 +170,7 @@
         <div class="footerText d-flex justify-content-between mt-4">
             <div class="countedDiv">
                 COUNTED BY:
-                <span class="counter">{{ $report->counted }}</span>
+                {{-- <span class="counter">{{ $report->counted }}</span> --}}
             </div>
 
             <div class="Page">
@@ -168,9 +179,9 @@
                 @endphp
             </div>
 
-            <div class="confirmedDiv">
+            <div class="confirmedDiv" style="margin-right: 100px">
                 CONFIRMED BY:
-                <span class="confirmer">{{ $report->confirmed }}</span>
+                {{-- <span class="confirmer">{{ $report->confirmed }}</span> --}}
             </div>
         </div>
     @endif  

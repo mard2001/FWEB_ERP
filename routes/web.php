@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\Report\CountController;
 use App\Http\Controllers\api\Report\RRController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScanAndMoveFilesController;
@@ -132,15 +133,6 @@ Route::get('/print/rr/testing', function () {
     return view('Pages.Printing.RR_printing_test', compact('report'));
 })->name('printrrtest');
 
-// Route::get('/print/rr/', function () {
-
-//     return view('Pages.Printing.RR_printing');
-// })->name('printrr');
-
-// Route::get('/print/rr/', function () {
-//     return view('Pages.Printing.RR_printing'); // Change to the actual view you want to show
-// })->name('printrr');
-
 Route::get('/print/rr/', [RRController::class, 'printPage'])->name('web.print');
 
 Route::get('/print/countsheet/testing', function () {
@@ -171,6 +163,11 @@ Route::get('/print/countsheet/testing', function () {
     return view('Pages.Printing.CountSheet_printing', compact('report'));
 })->name('printcountSheet');
 
+Route::get('/print/countsheet/manual', [CountController::class, 'printManualPage'])->name('printManualPage');
+
+Route::get('/countsheet', function () {
+    return page_view('invCount_page');
+})->name('countsheet');
 
 Route::get('/layout', function () {
     return page_view('layout');

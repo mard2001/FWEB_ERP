@@ -86,7 +86,7 @@
         
         <div class="row g-4">
             <div class="col">
-                <table>
+                <table style="font-size: 14px">
                     <tbody>
                         <tr>
                             <td></td>
@@ -112,7 +112,7 @@
                 </table>
             </div>
             <div class="col ">
-                <table>
+                <table style="font-size: 14px">
                     <tbody>
                         <tr>
                             <td></td>
@@ -139,7 +139,7 @@
             </div>
         </div>
         <hr>
-        <table class="table" style="font-size: 13px">
+        <table class="table" style="font-size: 12px">
             <thead>
                 <tr>
                     <th scope="col" class="text-center">No.</th>

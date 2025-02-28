@@ -160,7 +160,7 @@ class RRController extends Controller
                             ]);
                             
                             $detail->convertedQuantity = app(ProductCalculator::class)->convertProductToLargesttUnit(
-                                $detail->product->StockUom, 
+                                $uoms, 
                                 $detail->Quantity, 
                                 $detail->product->ConvFactAltUom, 
                                 $detail->product->ConvFactOthUom
@@ -293,7 +293,7 @@ class RRController extends Controller
         //
     }
 
-    
+
     public function setRRNum(Request $request) {
         // Session::put('RRNum', $request->RRNum);
         Cache::put('RRNum', $request->RRNum, now()->addMinutes(1)); 
@@ -335,9 +335,12 @@ class RRController extends Controller
                         tap($data, function ($header) {
                             foreach ($header->rrdetails as $detail) {
                                 if ($detail->product) {
-                                    // Call the convertProductToLargestUnit method
+                                    $uoms = array_map('strval', [
+                                        $detail->product->StockUom, $detail->product->AlternateUom, $detail->product->OtherUom
+                                    ]);
+
                                     $detail->convertedQuantity = app(ProductCalculator::class)->convertProductToLargesttUnit(
-                                        $detail->product->StockUom,
+                                        $uoms,
                                         $detail->Quantity,
                                         $detail->product->ConvFactAltUom,
                                         $detail->product->ConvFactOthUom
