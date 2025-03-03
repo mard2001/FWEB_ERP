@@ -2,7 +2,7 @@
 
 @section('html_title')
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <title>TESTING</title>
+    <title>Inventory Maintenance</title>
 @endsection
 
 @section('title_header')
