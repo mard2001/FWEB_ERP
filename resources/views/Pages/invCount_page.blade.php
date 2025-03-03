@@ -6,7 +6,7 @@
 @endsection
 
 @section('title_header')
-    <x-header title="Inventory Maintenance" />
+    <x-header title="Inventory" />
 @endsection
 
 @section('table')
