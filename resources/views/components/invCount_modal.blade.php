@@ -21,7 +21,7 @@
                     <button type="button" class="btn btn-sm btn-primary text-white" id="addICBtn">Add Sheet</button>
                     <button type="button" class="btn btn-sm btn-info text-white" id="editICBtn">Edit Sheet</button>
                     <button type="button" class="btn btn-sm btn-danger text-white" id="cancelEditICBtn">Cancel Changes</button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="closeICBtn" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

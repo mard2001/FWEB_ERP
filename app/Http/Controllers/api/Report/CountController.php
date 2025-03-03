@@ -205,7 +205,7 @@ class CountController extends Controller
             }
 
             CSLog::create([
-                'PROCESSEDID' => $cntHeaderId,
+                'PROCESSID' => $cntHeaderId,
                 'PROCESSEDBY' => $request->input('data.userID'),
                 'ACTION' => "Update",
                 'DATECREATED' => now()->setTimezone('Asia/Manila'),
@@ -235,11 +235,13 @@ class CountController extends Controller
     {
         try {
             // CSHeader::where('CNTHEADER_ID', $headerID)->update(['STATUS' => 0]);
-            // CSLog::create([
-            //     'PROCESSEDID' => $headerID,
-            //     'PROCESSEDBY' => $request->input('data.userID'),
-            //     'ACTION' => 0,
-            // ]);
+            CSLog::create([
+                'PROCESSID' => $headerID,
+                'PROCESSEDBY' => $request->input('data.userID'),
+                'ACTION' => "Delete",
+                'DATECREATED' => now()->setTimezone('Asia/Manila'),
+                'STATUS' => 1,
+            ]);
 
             return response()->json([
                 'message' => 'Inventory Count deleted successfully',

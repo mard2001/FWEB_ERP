@@ -176,6 +176,10 @@ $(document).ready(async function () {
         detailsDatatable.clear().rows.add(selectedMain.details).draw();
     })
 
+    $('#closeICBtn').on('click', function () {
+        isEditable = false;
+    })
+
 });
 
 function isTokenExist() {
@@ -364,7 +368,15 @@ const datatables = {
                         }
                     }
                 },
-                { data: 'calculated_units.inPC',  title: 'in PC' },
+                { data: 'calculated_units.inPC',  title: 'in PC',
+                    render: function(data, type, row) {
+                        if(row.uom.includes("PC")) {
+                            return data;
+                        } else{
+                            return "-";
+                        }
+                    }
+                },
             ],
             columnDefs: [
                 { className: "text-start", targets: [ 0, 1 ] },
