@@ -1,5 +1,5 @@
 var MainTH, selectedMain;
-var globalApi = "http://127.0.0.1:8000/";
+var globalApi = "https://spc.sfa.w-itsolutions.com/";
 var fileCtrTotal = 0;
 var insertion = 0;
 var jsonArr = [];
