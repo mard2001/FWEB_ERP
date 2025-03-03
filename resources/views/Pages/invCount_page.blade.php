@@ -2,11 +2,11 @@
 
 @section('html_title')
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <title>Inventory Count</title>
+    <title>Inventory Maintenance</title>
 @endsection
 
 @section('title_header')
-    <x-header title="Inventory Count" />
+    <x-header title="Inventory Maintenance" />
 @endsection
 
 @section('table')

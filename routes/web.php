@@ -33,7 +33,8 @@ Route::get('/product', function () {
 })->name('product');
 
 Route::get('/inventory', function () {
-    return page_view('inventory_page');
+    // return page_view('inventory_page');
+    return page_view('invCount_page');
 })->name('inventory');
 
 Route::get('/salesman', function () {

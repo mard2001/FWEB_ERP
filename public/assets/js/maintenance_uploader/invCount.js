@@ -148,17 +148,30 @@ $(document).ready(async function () {
             $('#rePrintPage').hide();
             $('#cancelEditICBtn').show();
         } else{
-            isEditable = false;
-            $('#deleteICBtn').show();
-            $('#addICBtn').hide();
-            $('#editICBtn').show();
-            $("#editICBtn").text('Edit Sheet').removeClass('btn-primary').addClass('btn-info');
-            $('#confirmIC').hide();
-            $('#rePrintPage').show();
-            $('#cancelEditICBtn').hide();
-
-            let updatedData = detailsDatatable.rows().data().toArray();
-            updateCount(updatedData);
+            Swal.fire({
+                title: "Are you sure to save new changes?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Save Changes"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    isEditable = false;
+                    $('#deleteICBtn').show();
+                    $('#addICBtn').hide();
+                    $('#editICBtn').show();
+                    $("#editICBtn").text('Edit Sheet').removeClass('btn-primary').addClass('btn-info');
+                    $('#confirmIC').hide();
+                    $('#rePrintPage').show();
+                    $('#cancelEditICBtn').hide();
+        
+                    let updatedData = detailsDatatable.rows().data().toArray();
+                    updateCount(updatedData);
+                }
+            }); 
+            
         }
     })
 
@@ -530,6 +543,17 @@ function updateCount(updated) {
     var SKUList = getUpdatedSKUs(originalSelected, updated)
     let userData = localStorage.getItem('user');
     let user = JSON.parse(userData);
+
+    Swal.fire({
+        text: "Please wait... Preparing data...",
+        timerProgressBar: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,  
+        allowEnterKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        },
+    });
     
     ajax('api/report/v2/countsheet/' + selectedMain.CNTHEADER_ID, 'POST', JSON.stringify({
         data: {
@@ -538,9 +562,8 @@ function updateCount(updated) {
         },
         _method: "PUT"
     }), (response) => { // Success callback
+        Swal.close();
         if (response.success) {
-            // originalSelected = JSON.parse(JSON.stringify(selectedMain))
-            
             Swal.fire({
                 title: "Success!",
                 text: response.message,
