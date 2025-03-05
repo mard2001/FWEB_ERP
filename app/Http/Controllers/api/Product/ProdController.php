@@ -174,7 +174,7 @@ class ProdController extends DynamicSQLHelper
             $found->update($data);
             return response()->json([
                 'success' => true,
-                'message' =>  "Product updated succesfully!",
+                'message' =>  "Product updated successfully!",
             ]);
 
         } catch (\Exception $e) {
@@ -207,7 +207,7 @@ class ProdController extends DynamicSQLHelper
             $data->delete();
 
             $response = [
-                'message' => 'Product deleted succesfully!',
+                'message' => 'Product deleted successfully!',
                 'success' => true
             ];
         } catch (\Exception $e) {
