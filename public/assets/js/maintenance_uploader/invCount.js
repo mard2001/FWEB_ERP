@@ -41,7 +41,7 @@ $(document).ready(async function () {
     GlobalUX();
 
     await datatables.loadCountData();
-    // await initVS.liteDataVS();
+    await initVS.liteDataVS();
     datatables.initDetailsDatatable([]);
 
     $("#icTable").on("click", "tbody tr", async function () {
@@ -366,7 +366,7 @@ const datatables = {
                 { data: 'calculated_units.inCS',  title: 'in CS',
                     render: function(data, type, row) {
                         if(row.uom.includes("CS")) {
-                            return data;
+                            return `<span class="pointer">${data}</span>`;
                         } else{
                             return "-";
                         }
@@ -375,7 +375,7 @@ const datatables = {
                 { data: 'calculated_units.inIB',  title: 'in IB',
                     render: function(data, type, row) {
                         if(row.uom.includes("IB")) {
-                            return data;
+                            return `<span class="pointer">${data}</span>`;
                         } else{
                             return "-";
                         }
@@ -384,7 +384,7 @@ const datatables = {
                 { data: 'calculated_units.inPC',  title: 'in PC',
                     render: function(data, type, row) {
                         if(row.uom.includes("PC")) {
-                            return data;
+                            return `<span class="pointer">${data}</span>`;
                         } else{
                             return "-";
                         }
@@ -491,6 +491,29 @@ const ICModal = {
         //     tbody.append(tr);
         // });
     },
+}
+
+const initVS = {
+    liteDataVS: async () => {
+        // Initialize VirtualSelect for ship via
+        VirtualSelect.init({
+            ele: '#filterPOVS',                   // Attach to the element
+            options: [
+                // { label: "", value: null },
+                // { label: "", value: 1 },
+                // { label: "", value: "2" },
+
+            ], 
+            multiple: true, 
+            hideClearButton: true, 
+            search: false,
+            maxWidth: '100%', 
+            additionalClasses: 'rounded',
+            additionalDropboxClasses: 'rounded',
+            additionalDropboxContainerClasses: 'rounded',
+            additionalToggleButtonClasses: 'rounded',
+        });
+    }
 }
 
 function downloadToCSV(jsonArr){
