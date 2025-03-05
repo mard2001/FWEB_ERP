@@ -38,6 +38,8 @@ use App\Http\Controllers\api\MasterData\SalesmanController;
 use App\Http\Controllers\api\MasterData\SupplierController;
 use App\Http\Controllers\api\MasterData\InventoryController;
 use App\Http\Controllers\api\MasterData\PAMasterListController;
+use App\Http\Controllers\api\Report\CustController;
+use App\Http\Controllers\api\Report\SManController;
 
 Route::middleware(['auth:sanctum', DynamicDatabase::class])->group(function () {
 
@@ -85,7 +87,7 @@ Route::post('/setCNTHeader', [CountController::class, 'setCNTHeader']);
 Route::get('/remCNTHeader', [CountController::class, 'remCNTHeader']);
 
 
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::apiResource('/po', POController::class);
         Route::post('/po-confirm/{poid}', [POController::class, 'POConfirm']);
@@ -97,6 +99,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('prod')->group(function () {
         Route::post('/v2/product/upload', [ProdController::class, 'storeBulk']);
         Route::apiResource('/v2/product', ProdController::class);
+    });
+
+    Route::prefix('maintenance')->group(function () {
+        Route::apiResource('/v2/customer', CustController::class);
+        Route::post('/v2/customer/upload', [CustController::class, 'storeBulk']);
+        Route::apiResource('/v2/salesman', SManController::class);
     });
     
     Route::prefix('report')->group(function () {
@@ -119,7 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/registerConn', [DBConsManager::class, 'saveDbconPassword']);
 
 
-});
+// });
 
 
 

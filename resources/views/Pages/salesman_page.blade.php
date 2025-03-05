@@ -242,5 +242,5 @@
 @endsection
 
 @section('pagejs')
-<script src="{{ asset('assets/js/maintenance_uploader/salesman.js') }}"></script>
+{{-- <script src="{{ asset('assets/js/maintenance_uploader/salesman.js') }}"></script> --}}
 @endsection

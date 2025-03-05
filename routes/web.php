@@ -42,7 +42,8 @@ Route::get('/salesman', function () {
 })->name('salesman');
 
 Route::get('/customer', function () {
-    return page_view('customer_page');
+    // return page_view('customer_page');
+    return page_view('cust_page');
 })->name('customer');
 
 Route::get('/dbconfig', function () {
