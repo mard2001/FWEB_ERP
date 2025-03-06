@@ -38,7 +38,7 @@
                     <div class="col-3">
                         <div class="mb-3">
                             <label for="mdCode">MdCode</label>
-                            <div id="VSmdCode" name="filter" style="width: 200px" class="form-control bg-white p-0 mx-1">MdCode</div>
+                            <div id="VSmdCode" name="filter" style="width: 200px" class="form-control bg-white p-0 mx-1 needField">MdCode</div>
                             <input disabled type="text" id="mdCode" name="mdCode" class="form-control bg-white" required placeholder="mdCode">
                         </div> 
                     </div>
@@ -63,13 +63,13 @@
                     <div class="col-3">
                         <div class="mb-3">
                             <label for="custCode">CustCode</label>
-                            <input disabled type="text" id="custCode" name="custCode" class="form-control bg-white" required placeholder="custCode">
+                            <input disabled type="text" id="custCode" name="custCode" class="form-control bg-white needField" required placeholder="custCode">
                         </div>
                     </div>
                     <div class="col-9">
                         <div class="mb-3">
                             <label for="custName">Name</label>
-                            <input disabled type="text" id="custName" name="custName" class="form-control bg-white" required placeholder="custName">
+                            <input disabled type="text" id="custName" name="custName" class="form-control bg-white needField" required placeholder="custName">
                         </div>    
                     </div>
                     <div class="col-4">
@@ -93,7 +93,7 @@
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="address">Address</label>
-                            <input disabled type="text" id="address" name="address" class="form-control bg-white" required placeholder="address">
+                            <input disabled type="text" id="address" name="address" class="form-control bg-white needField" required placeholder="address">
                         </div>    
                     </div>
                     {{-- <div class="col-4">
@@ -129,19 +129,19 @@
                     <div class="col-4">
                         <div class="mb-3">
                             <label for="frequencyCategory">Frequency</label>
-                            <input disabled type="number" id="frequencyCategory" name="frequencyCategory" class="form-control bg-white" required placeholder="frequencyCategory">
+                            <input disabled type="text" id="frequencyCategory" name="frequencyCategory" class="form-control bg-white needField" required placeholder="frequencyCategory" onkeypress="return /[0-9]/.test(event.key)">
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="mb-3">
                             <label for="mcpDay">MCP Day</label>
-                            <input disabled type="number" id="mcpDay" name="mcpDay" class="form-control bg-white" required placeholder="mcpDay">
+                            <input disabled type="text" id="mcpDay" name="mcpDay" class="form-control bg-white needField" required placeholder="mcpDay" onkeypress="return /[0-9]/.test(event.key)">
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="mb-3">
                             <label for="mcpSchedule">MCP Schedule</label>
-                            <input disabled type="text" id="mcpSchedule" name="mcpSchedule" class="form-control bg-white" required placeholder="mcpSchedule">
+                            <input disabled type="text" id="mcpSchedule" name="mcpSchedule" class="form-control bg-white needField" required placeholder="mcpSchedule">
                         </div>
                     </div>
                     {{-- <div class="col-12">
@@ -159,13 +159,13 @@
                     <div class="col-6">
                         <div class="mb-3">
                             <label for="priceCode">Price Code</label>
-                            <input disabled type="text" id="priceCode" name="priceCode" class="form-control bg-white" required placeholder="priceCode">
+                            <input disabled type="text" id="priceCode" name="priceCode" class="form-control bg-white needField" required placeholder="priceCode" onkeypress="return /[0-9]/.test(event.key)" maxlength="2">
                         </div>    
                     </div>
                     <div class="col-6">
                         <div class="mb-3">
                             <label for="custType">Customer Type</label>
-                            <input disabled type="text" id="custType" name="custType" class="form-control bg-white" required placeholder="custType">
+                            <input disabled type="text" id="custType" name="custType" class="form-control bg-white needField" required placeholder="custType">
                         </div>    
                     </div>
                 </div>

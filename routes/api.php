@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\Report\SalespersonController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -105,6 +106,9 @@ Route::get('/remCNTHeader', [CountController::class, 'remCNTHeader']);
         Route::apiResource('/v2/customer', CustController::class);
         Route::post('/v2/customer/upload', [CustController::class, 'storeBulk']);
         Route::apiResource('/v2/salesman', SManController::class);
+        Route::apiResource('/v2/salesperson', SalespersonController::class);
+        Route::post('/v2/salesperson/upload', [SalespersonController::class, 'storeBulk']);
+
     });
     
     Route::prefix('report')->group(function () {

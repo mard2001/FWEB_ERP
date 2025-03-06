@@ -19,7 +19,6 @@ class Customer extends Model
     protected $hidden = ['time_stamp'];
 
     protected $fillable = [
-        "customerID",
         "mdCode",
         "custCode",
         "custName",

@@ -38,7 +38,8 @@ Route::get('/inventory', function () {
 })->name('inventory');
 
 Route::get('/salesman', function () {
-    return page_view('salesman_page');
+    // return page_view('salesman_page');
+    return page_view('salesperson_page');
 })->name('salesman');
 
 Route::get('/customer', function () {

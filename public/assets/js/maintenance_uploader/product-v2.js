@@ -784,6 +784,7 @@ const uploadconfirmUpload = document.getElementById('uploadBtn2')
         // Get all the files selected in the file input
         var files = document.getElementById('formFileMultiple').files;
 
+        $('#totalUploadSuccess').html(insertion);
         $('#totalFiles').html(files.length);
         $('#totalFile').html(files.length);
         fileCtrTotal = files.length;

@@ -4,7 +4,11 @@ var fileCtrTotal = 0;
 var insertion = 0;
 var jsonArr = [];
 var salesmanData = [];
-console.log('CUSTOMER V2')
+var expectedtotalRows = 0;
+var actualtotalRows = 0;
+var iconResult;
+var errorFile = false;
+var isloading = false;
 
 const dataTableCustomBtn = `<div class="main-content buttons w-100 overflow-auto d-flex align-items-center px-2" style="font-size: 12px;">
                                 <div class="btn d-flex justify-content-around px-2 align-items-center me-1" id="addBtn">
@@ -169,6 +173,7 @@ $(document).ready(async function () {
                                 allowEnterKey: false,
                             }).then((result) => {
                                 if (result.isConfirmed) {
+                                    isloading = true;
                                     Swal.fire({
                                         text: "Please wait... reloading data...",
                                         timerProgressBar: true,
@@ -249,7 +254,7 @@ $(document).ready(async function () {
                                     if (result.isConfirmed) {
                                         $('#confirmPO').hide();
                                         CustomerModal.hide();
-        
+                                        isloading = true;
                                         Swal.fire({
                                             text: "Please wait... reloading data...",
                                             timerProgressBar: true,
@@ -383,7 +388,10 @@ const datatables = {
             jsonArr = response.data;
             // console.log(response.data);
             datatables.initCustomerDatatable(response);
-            Swal.close();
+            if(isloading){
+                Swal.close();
+                isloading = false;
+            }
         }, (xhr, status, error) => { // Error callback
             console.error('Error:', error);
         });

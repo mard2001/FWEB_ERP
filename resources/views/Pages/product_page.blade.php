@@ -55,7 +55,7 @@
                     </div>
                     <div class="col mt-2">
                         <label for="priceWithVat">Product Price</label>
-                        <input disabled type="number" id="priceWithVat" name="priceWithVat" class="form-control bg-white" required placeholder="Price" min=0>
+                        <input disabled type="number" id="priceWithVat" name="priceWithVat" class="form-control bg-white" required placeholder="Price" min=0 onkeypress="return /[0-9.]/.test(event.key)">
                     </div>
                     <div class="col mt-2">
                         <label for="Description">Product Description</label>
@@ -87,7 +87,7 @@
                         </div>
                         <div class="col mt-2">
                             <label for="ConvFactAltUom">ConvFactAltUom</label>
-                            <input disabled type="text" id="ConvFactAltUom" name="ConvFactAltUom" class="form-control bg-white" required placeholder="ConvFactAltUom">
+                            <input disabled type="text" id="ConvFactAltUom" name="ConvFactAltUom" class="form-control bg-white" required placeholder="ConvFactAltUom" onkeypress="return /[0-9.]/.test(event.key)">
                         </div>
                     </div>
                     <div class="row">
@@ -97,16 +97,16 @@
                         </div>
                         <div class="col mt-2">
                             <label for="ConvFactOthUom">ConvFactOthUom</label>
-                            <input disabled type="text" id="ConvFactOthUom" name="ConvFactOthUom" class="form-control bg-white" required placeholder="ConvFactOthUom">
+                            <input disabled type="text" id="ConvFactOthUom" name="ConvFactOthUom" class="form-control bg-white" required placeholder="ConvFactOthUom" onkeypress="return /[0-9.]/.test(event.key)">
                         </div>
                     </div>
                     <div class="col mt-2">
                         <label for="Mass">Mass</label>
-                        <input disabled type="text" id="Mass" name="Mass" class="form-control bg-white" required placeholder="Mass">
+                        <input disabled type="text" id="Mass" name="Mass" class="form-control bg-white" required placeholder="Mass" onkeypress="return /[0-9.]/.test(event.key)">
                     </div>
                     <div class="col mt-2">
                         <label for="Volume">Volume</label>
-                        <input disabled type="text" id="Volume" name="Volume" class="form-control bg-white" required placeholder="Volume">
+                        <input disabled type="text" id="Volume" name="Volume" class="form-control bg-white" required placeholder="Volume" onkeypress="return /[0-9.]/.test(event.key)">
                     </div>
                     <div class="col mt-2">
                         <label for="ProductClass">ProductClass</label>
