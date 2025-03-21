@@ -1,11 +1,44 @@
 var MainTH, selectedMain;
+var ItemsTH, selectedItems;
 var globalApi = "http://127.0.0.1:8000/";
+var ajaxMainData, ajaxItemsData;
+var shippedToData, selecteddShippedTo;
+var vendordata, selectedVendor;
+var productConFact;
+var itemTmpSave = [];
+var priceCodes;
 var fileCtrTotal = 0;
 var insertion = 0;
 var jsonArr = [];
 var detailsDatatable;
 var isEditable = false;
 var originalSelected = [];
+var productConFact;
+
+// FOR THE MEANTIME
+selectedVendor = {
+    Barangay: "Barangay 2",
+    City: "Calamba",
+    CompleteAddress: "456 Elm St",
+    ContactNo: "09234567890",
+    ContactPerson: "Jane Smith",
+    Municipality: "Calamba City",
+    PriceCode: "1 ",
+    Province: "Laguna",
+    Region: "Region IV-A",
+    SupplierCode: "SUP002",
+    SupplierName: "XYZ Furniture",
+    SupplierType: "Furniture",
+    TermsCode: "NET60",
+    cID: "10",
+    holdStatus: "1",
+    lastUpdated: "2025-02-04T16:57:00.540000Z"
+}
+$("#VendorContactName").val(selectedVendor.ContactPerson);
+$("#vendorAddress").val(selectedVendor.CompleteAddress);
+$("#vendorPhone").val(selectedVendor.ContactNo);
+$("#shippingTerms").val(selectedVendor.TermsCode);
+// ===============================================
 
 const dataTableCustomBtn = `<div class="main-content buttons w-100 overflow-auto d-flex align-items-center px-2" style="font-size: 12px;">
                                 <div class="btn d-flex justify-content-around px-2 align-items-center me-1" id="addBtn">
@@ -47,7 +80,10 @@ $(document).ready(async function () {
 
     await datatables.loadSOData();
     await initVS.liteDataVS();
-    datatables.initDetailsDatatable([]);
+    await initVS.bigDataVS();
+    await getProductPriceCodes();
+    SOItemsModal.setValidator();
+    // datatables.initDetailsDatatable([]);
 
     $("#soTable").on("click", "tbody tr", async function () {
         Swal.fire({
@@ -97,6 +133,171 @@ $(document).ready(async function () {
     $("#csvUploadShowBtn").on("click", async function () {
         $('#uploadCsv').modal('show');
     });
+
+    $(document).on('click', '#addBtn', async function () {
+        SOModal.enable(true);
+        SOModal.clear();
+        
+        // $('#editXmlDataModal').modal('show');
+
+        $('#deleteSOBtn').hide();
+        $('#rePrintPage').hide();
+        $('#saveSOBtn').show();
+        $('#editSOBtn').hide();
+        itemTmpSave = [];
+        selectedMain = null;
+
+        datatables.initSOItemsDatatable(null);
+        $('#confirmSO').hide();
+        $('#addItems').show();
+        // ItemsTH.column(6).visible(true);
+        SOModal.show();
+    });
+
+    $("#saveSOBtn").on("click", function () {
+        if (SOModal.isValid()) {
+            if (itemTmpSave.length < 1) {
+                Swal.fire({
+                title: "No items",
+                text: "Please review your order. No items have been added for purchase.",
+                icon: "error",
+                });
+            } else {
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "Do you want to add this data?",
+                    icon: "question",
+                    showDenyButton: true,
+                    confirmButtonText: "Yes, Add",
+                    denyButtonText: `Cancel`,
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        SOModal.SOSave();
+                    }
+                });
+            } 
+        } else {
+            Swal.fire({
+                title: "Missing Required Fields!",
+                text: "Please fill in all fields. Some required fields are empty.",
+                icon: "warning",
+            });
+        }
+    });
+
+    $("#addItems").on("click", function () {
+        SOItemsModal.clear();
+        SOItemsModal.enable(true);
+
+        $(".UOMField").addClass("d-none");
+        $("#itemSave").text("Save Item");
+        SOItemsModal.show();
+
+        $("#itemEdit").hide();
+        $("#itemSave").show();
+    });
+
+    $("#itemSave").on("click", function () {
+        if ( SOItemsModal.isValid() && $("#TotalPrice").val() && parseInt(parseMoney($("#TotalPrice").val())) > 0 ) {
+            const getItem = SOItemsModal.getData();
+    
+            if ($(this).text().toLowerCase() == "update item") {
+                SOItemsModal.itemTmpUpdate(getItem);
+            } else {
+                getItem.PRD_INDEX = itemTmpSave ? itemTmpSave.length + 1 : 1;
+                SOItemsModal.itemTmpSave(getItem);
+            }
+
+            datatables.initSOItemsDatatable(itemTmpSave);
+            calculateCost();
+        } else {
+            Swal.fire({
+                title: "Missing Required Fields!",
+                text: "Please fill in all fields. Some required fields are empty.",
+                icon: "warning",
+            });
+        }
+    });
+
+    $("#itemCloseBtn").on("click", function () {
+        let valid = false;
+        const data = SOItemsModal.getData();
+    
+        // Check for empty values (excluding totalDiscount since it's always 0)
+        for (const key in data) {
+          if (data[key] === "" || data[key] === null || data[key] === undefined) {
+            valid = true;  
+          }
+        }
+    
+        if (valid) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to close? Unsaved data will be erased.",
+                icon: "question",
+                showDenyButton: true,
+                confirmButtonText: "Yes, Close",
+                denyButtonText: `Cancel`,
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    SOItemsModal.hide();
+                }
+            });
+        }
+    });
+
+    $(".fa-minus").on("click", function () {
+        const quantityElement = $(this).closest(".input-group").find("input");
+        let quantity = quantityElement.val();
+    
+        if (quantity && parseInt(quantity) > 0) {
+          quantityElement.val(parseInt(quantity) - 1);
+          autoCalculateTotalPrice();
+        }
+    });
+    
+    $(".fa-plus").on("click", function () {
+        const quantity = $(this).closest(".input-group").find("input");
+        quantity.val(quantity.val() ? parseInt(quantity.val()) + 1 : 1);
+        autoCalculateTotalPrice();
+    });
+
+    $("#Quantity").on("input", function () {
+        autoCalculateTotalPrice();
+    });
+
+    $("#CSQuantity, #IBQuantity, #PCQuantity").on("input", function () {
+        autoCalculateTotalPrice();
+    });
+
+    $(document).on("click", ".itemDeleteIcon", async function () {
+        const row = $(this).closest("tr");
+        const skuCode = row.find("td:first"); // Get the first <td>
+        SOItemsModal.itemTmpDelete(skuCode);
+    });
+
+    $(document).on("click", ".itemUpdateIcon", async function () {
+        console.log('clicked');
+        const row = $(this).closest("tr");
+        const itemStockCode = row.find("td:first").text().trim();
+        SOItemsModal.enable(true);
+    
+        $("#CSQuantity").val("");
+        $("#IBQuantity").val("");
+        $("#PCQuantity").val("");
+    
+        SOItemsModal.show();
+    
+        const select = document.querySelector("#StockCode");
+    
+        // Set value programmatically
+        select.setValue(itemStockCode);
+    
+        // Manually trigger the `afterClose` event
+        const event = new CustomEvent("afterClose");
+        select.dispatchEvent(event);
+    });
+    
 });
 
 function isTokenExist() {
@@ -333,12 +534,106 @@ const datatables = {
 
             cell.data(newValue).draw();
         });
-    }
+    },
+
+    loadItems: async (SONumber) => {
+
+        const soItems = await ajax('api/orders/po-items/search-items/' + SONumber, 'GET', null, (response) => { // Success callback
+            ajaxItemsData = response.data;
+            datatables.initSOItemsDatatable(ajaxItemsData);
+
+        }, (xhr, status, error) => { // Error callback
+            console.error('Error:', error);
+        });
+
+
+    },
+
+    initSOItemsDatatable: (datas) => {
+        if (ItemsTH) {
+            ItemsTH.clear().draw();
+            datas && ItemsTH.rows.add(datas).draw();
+        } else {
+            ItemsTH = $('#itemTables').DataTable({
+                data: datas,
+                columns: [
+                    { data: 'StockCode' },
+                    { data: 'Decription' },
+                    { data: 'Quantity' },
+                    { data: 'UOM' },
+                    {
+                        data: 'PricePerUnit',
+                        render: function (data, type, row) {
+                            return formatMoney(data);
+                        }
+                    },
+                    {
+                        data: 'TotalPrice',
+                        render: function (data, type, row) {
+                            return formatMoney(data);
+                        }
+                    },
+                    {
+                        data: null, 
+                        render: function (data, type, row) {
+                            return ` <div class="d-flex actIcon">
+                                        <div class="w-50 d-flex justify-content-center itemUpdateIcon">
+                                            <i class="fa-regular fa-pen-to-square fa-lg text-primary m-auto "></i>
+                                        </div>
+                                        <div class="w-50 d-flex justify-content-center itemDeleteIcon">
+                                            <i class="fa-solid fa-trash fa-lg text-danger m-auto"></i>
+                                        </div>
+                                    </div>`;
+                        },
+                        orderable: false, // Prevent sorting on the checkbox column
+                        searchable: false,  // Disable search on the checkbox column
+                        createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+                            // Add class to the parent <td> element dynamically
+                            $(cell).addClass('nhover');
+                        }
+                    },
+
+                ],
+                columnDefs: [
+                    { className: "text-center", targets: [0, 2, 3] },
+                    { className: "text-end", targets: [4, 5] },
+                ],
+                searching: true,
+                scrollCollapse: true,
+                responsive: true, // Enable responsive modeoWidth: true, // Enable auto-width calculation
+                // scrollY: '100%',
+                // scrollX: '100%',
+                "createdRow": function (row, data) {
+                    $(row).attr('id', data.id);
+                },
+                "lengthChange": false,  // Hides the per page dropdown
+                "info": false,          // Hides the bottom text (like "Showing x to y of z entries")
+                "paging": false,        // Hides the pagination controls (Next, Previous, etc.)
+            });
+
+        }
+
+        $('#totalItemsLabel').text(datas ? datas.length : 0);
+    },
 }
 
 const initVS = {
     liteDataVS: async () => {
         // Initialize VirtualSelect for ship via
+        VirtualSelect.init({
+            ele: '#shipVia',                   // Attach to the element
+            options: [
+                { label: "Road Delivery", value: "road_delivery" },
+                { label: "Air Freight", value: "air_freight" }
+            ],                                 // Provide options
+            maxWidth: '100%',                  // Set maxWidth
+            multiple: false,                   // Enable multiselect
+            hideClearButton: true,             // Hide clear button
+            disabledOptions: ['air_freight'],
+            selectedValue: 'road_delivery',    // Preselect (must match `value`)
+        });
+
+        // Initialize VirtualSelect for Filter
         VirtualSelect.init({
             ele: '#filterPOVS',                   // Attach to the element
             options: [
@@ -356,12 +651,265 @@ const initVS = {
             additionalDropboxContainerClasses: 'rounded',
             additionalToggleButtonClasses: 'rounded',
         });
-    }
+
+        vendorModal.loadVendorVS();
+
+        $("#vendorName").on("afterClose", function () {
+            if (this.value) {
+                var findVendor = vendordata.find((item) => item.cID == 10);
+                const validPriceCode = priceCodes.some(
+                    (item) => item.PRICECODE == findVendor.PriceCode.trim()
+                );
+              
+                if (validPriceCode) {
+                    $("#VendorContactName").val(findVendor.ContactPerson);
+                    $("#vendorAddress").val(findVendor.CompleteAddress);
+      
+                    var mobileContact = (findVendor.ContactNo = /^9\d{9}$/.test(
+                        findVendor.ContactNo
+                    )
+                    ? findVendor.ContactNo.replace(/^9/, "09")
+                    : findVendor.ContactNo);
+      
+                selectedVendor = findVendor;
+      
+                $("#vendorPhone").val(mobileContact);
+      
+                if (this.value && $("#shippedToName").value) {
+                    $("#addItems").prop("disabled", false);
+                }
+      
+                $("#shippingTerms").val(findVendor.TermsCode);
+            } else {
+                selectedVendor = null;
+                Swal.fire({
+                  title: "Opppps..",
+                  text: "The selected vendor has an invalid price code.",
+                  icon: "warning",
+                });
+                $("#vendorName").trigger("reset");
+              }
+            } 
+        });
+      
+        $("#vendorName").on("reset", function () {
+            $("#VendorContactName").val("");
+            $("#vendorAddress").val("");
+            $("#vendorPhone").val("");
+            selectedVendor = null;
+        });
+
+        //shippedToData
+        await ajax('api/supplier-shipped-to', 'GET', null, (response) => { // Success callback
+            shippedToData = response.data;
+
+            const newData = response.data.map(item => {
+                // Create a new object with the existing properties and the new column
+                return {
+                    value: item.cID, // Spread the existing properties
+                    label: item.CompleteAddress, // Copy the value from sourceKey to targetKey
+                };
+            });
+
+            // Check if the VirtualSelect instance exists before destroying
+            if (document.querySelector('#shippedToName')?.virtualSelect) {
+                document.querySelector('#shippedToName').destroy();
+            }
+
+            VirtualSelect.init({
+                ele: '#shippedToName',
+                options: newData,
+                markSearchResults: true,
+                maxWidth: '100%',
+                search: true,
+                autofocus: true,
+                hasOptionDescription: true,
+                noSearchResultsText: `<div class="w-100 d-flex justify-content-around align-items-center mt-2">
+                                    <div class="w-auto text-center">
+                                         No result found. Add new?
+                                    </div>
+                                    <div class="w-auto">
+                                        <button id="ShipperNoDataFoundBtn" type="button" class="btn btn-primary btn-sm">Add new</button>
+                                    </div>
+                                </div>`,
+
+            });
+
+            $('#shippedToName').on('afterClose', function () {
+                if (this.value) {
+                    var findSupplier = response.data.find(item => item.cID == this.value);
+
+                    $('#shippedToContactName').val(findSupplier.ContactPerson.trim());
+                    $('#shippedToAddress').val(findSupplier.CompleteAddress.trim());
+
+                    var mobileContact = findSupplier.ContactNo = /^9\d{9}$/.test(findSupplier.ContactNo) ? findSupplier.ContactNo.replace(/^9/, "09") : findSupplier.ContactNo;
+
+                    $('#shippedToPhone').val(mobileContact);
+
+                    // if (this.value && document.querySelector('#vendorName').value) {
+                    //     $('#addItems').prop("disabled", false);
+                    // }
+
+                    console.log(this.value);
+                }
+
+            });
+
+            $('#shippedToName').on('reset', function () {
+                $('#shippedToContactName').val('');
+                $('#shippedToAddress').val('');
+                $('#shippedToPhone').val('');
+            });
+
+        }, (xhr, status, error) => { // Error callback
+            console.error('Error:', error);
+        });
+    },
+
+    bigDataVS: async () => {
+        await ajax( "api/product", "GET", null,
+          (response) => {
+            const products = response.data;
+    
+            const newData = products.map((item) => {
+              return {
+                description: item.Description,
+                value: item.StockCode, 
+                label: item.StockCode, 
+              };
+            });
+    
+            if (document.querySelector("#StockCode")?.virtualSelect) {
+              document.querySelector("#StockCode").destroy();
+            }
+    
+            // Initialize VirtualSelect
+            VirtualSelect.init({
+                ele: "#StockCode", // Attach to the element
+                options: newData, // Provide options
+                maxWidth: "100%", // Set maxWidth
+                autofocus: true,
+                search: true,
+                hasOptionDescription: true,
+            });
+    
+            $("#StockCode").on("afterClose", async function () {
+                if (this.value) {
+                    const stockCode = this.value;
+                    var findProduct = products.find(
+                        (item) => item.StockCode == stockCode
+                    );
+                    $("#Decription").val(findProduct.Description);
+      
+                    let priceCode = selectedVendor.PriceCode.trim();
+      
+                    const getPriceBody = {
+                        stockCode: stockCode,
+                        priceCode: priceCode,
+                    };
+      
+                    await ajax( "api/getProductPrice", "GET", getPriceBody, (response) => {
+                      if (response.status_response == 1) {
+                        var uomColumn = ["StockUom", "AlternateUom", "OtherUom"];
+      
+                        var uoms = uomColumn.map((item) => {
+                            return {
+                                value: findProduct[item], 
+                                label: findProduct[item], 
+                            };
+                        });
+      
+                        uoms = uoms.filter(
+                            (item, index, self) =>
+                                index === self.findIndex((other) => other.value === item.value)
+                        );
+      
+                        if (!$(".UOMField").hasClass("d-none")) {
+                            $(".UOMField").addClass("d-none");
+                            $("#itemModalFields").validate().resetForm();
+                        }
+      
+                        uoms.forEach((item) => {
+                            $(`#${item.value}Div`).removeClass("d-none");
+                        });
+      
+                        productConFact = response.convertionFactor;
+      
+                        $("#PricePerUnit").val(response.response.UNITPRICE);
+                        $("#itemSave").prop("disabled", false);
+      
+                        const isAlreadyExist = itemTmpSave.find(
+                            (item) => item.StockCode == stockCode
+                        );
+      
+                        if (isAlreadyExist) {
+                            selectedItem = isAlreadyExist;
+                            SOItemsModal.itemEditMode(uoms, isAlreadyExist);
+                        } else {
+                            if ($("#itemSave").text().toLowerCase() == "update item") {
+                                $("#itemSave").text("Save Item");
+                            }
+                        }
+                      } else {
+                            $("#PricePerUnit").val("");
+                            $("#itemSave").prop("disabled", true);
+      
+                            Swal.fire({
+                                title: "Opppps..",
+                                text: "No price maintained for this product",
+                                icon: "warning",
+                            });
+                        }
+                    },
+                    (xhr, status, error) => {
+                        $("#PricePerUnit").val("");
+                        $("#itemSave").prop("disabled", true);
+      
+                        Swal.fire({
+                            title: "Opppps..",
+                            text: "No price maintained for this product",
+                            icon: "warning",
+                        });
+                    }
+                  );
+      
+                  autoCalculateTotalPrice();
+                }
+            });
+    
+            $("#StockCode").on("reset", function () {
+                $("#Decription").val("");
+                $("#PricePerUnit").val("");
+            });
+          },
+          (xhr, status, error) => {
+            // Error callback
+            console.error("Error:", error);
+          }
+        );
+    },
 }
 
 const SOModal = {
+    isValid: () => {
+        return $("#modalFields").valid();
+    },
     show: () => {
         $('#salesOrderMainModal').modal('show');
+    },
+    hide: () => {
+        $('#salesOrderMainModal').modal('hide');
+    },
+    clear: () => {
+        $('#modalFields input[type="text"]').val('');
+        $('#modalFields input[type="number"]').val('');
+        $('#modalFields textarea').val('');
+
+        // $('#shippedToContactName').val('');
+        // $('#shippedToAddress').val('');
+        // $('#shippedToPhone').val('');
+        // document.querySelector('#shippedToName').virtualSelect.setValue(null);
+        // document.querySelector('#shipVia').virtualSelect.setValue(null);
     },
     enable: (enable) => {
         $('#modalFields input[type="text"]').prop('disabled', !enable);
@@ -385,10 +933,434 @@ const SOModal = {
         $('#OrderDate').html(SODetails.OrderDate);
         $('#ReqShipDate').html(SODetails.ReqShipDate);
 
-        detailsDatatable.clear().rows.add(SODetails.details).draw();
+        // initSOItemsDatatable.clear().rows.add(SODetails.details).draw();
+    },
+    SOSave: async () => {
+        let SOData = SOModal.getData();
+        SOData.Items = itemTmpSave.map((item, index) => ({
+          ...item,  
+          PRD_INDEX: index + 1, 
+        }));
+    
+        SOData.orderPlacerEmail = "isItUserEmail@email.com";
+        
+        console.log(SOData);
+        // await ajax(
+        //   "api/orders/po",
+        //   "POST",
+        //   JSON.stringify({ data: POData }),
+        //   (response) => {
+        //     // Success callback
+        //     if (response.success) {
+        //       datatables.loadPO();
+        //       POModal.hide();
+    
+        //       Swal.fire({
+        //         title: "Success!",
+        //         text: response.message,
+        //         icon: "success",
+        //       });
+        //     }
+        //   },
+        //   (xhr, status, error) => {
+        //     // Error callback
+    
+        //     if (xhr.responseJSON && xhr.responseJSON.message) {
+        //       Swal.fire({
+        //         title: "Opppps..",
+        //         text: xhr.responseJSON.message,
+        //         icon: "error",
+        //       });
+        //     }
+        //   }
+        // );
+    },
+    getData: () => {
+        var user = JSON.parse(localStorage.getItem("user"));
+        var data = {
+            // PODate: moment().format("YYYY-MM-DD"),
+            SupplierCode: selectedVendor.SupplierCode.trim(),
+            SupplierName: selectedVendor.SupplierName.trim(),
+            productType: selectedVendor.SupplierType.trim(),
+            FOB: $("#fob").val(),
+            deliveryAddress: $("#shippedToAddress").val(),
+            contactPerson: $("#shippedToContactName").val(),
+            contactNumber: $("#shippedToPhone").val(),
+            deliveryMethod: $("#shipVia").val(),
+            totalDiscount: 0,
+            totalTax: parseMoney($("#taxCost").text()),
+            SpecialInstruction: $("#poComment").val(),
+            EncoderID: user.user_id,
+            orderPlacer: $("#requisitioner").val(),
+            // orderPlacerEmail: user.email,
+            subTotal: parseMoney($("#subTotal").text()),
+            TermsCode: $("#shippingTerms").val(),
+            totalCost: parseMoney($("#grandTotal").text()),
+        };
+    
+        return data;
     },
 }
 
+const SOItemsModal = {
+    setValidator: () => {
+        $.validator.addMethod( "atLeastOneFilled",
+          function (value, element) {
+                var csQuantity = $("#CSQuantity").val();
+                var ibQuantity = $("#IBQuantity").val();
+                var pcQuantity = $("#PCQuantity").val();
+        
+                // Check if at least one has a value
+                return csQuantity !== "" || ibQuantity !== "" || pcQuantity !== "";
+          },
+          "At least one quantity field is required."
+        ); // Custom error message
+    
+        $("#itemModalFields").validate({
+            rules: {
+                CSQuantity: {
+                    atLeastOneFilled: true,
+                },
+                IBQuantity: {
+                    atLeastOneFilled: true,
+                },
+                PCQuantity: {
+                    atLeastOneFilled: true,
+                },
+            },
+            messages: {
+                CSQuantity: {
+                    atLeastOneFilled: "At least one quantity field is required.",
+                },
+                IBQuantity: {
+                    atLeastOneFilled: "At least one quantity field is required.",
+                },
+                PCQuantity: {
+                    atLeastOneFilled: "At least one quantity field is required.",
+                },
+            },
+            submitHandler: function (form) {
+                alert("Form is valid!");
+                form.submit();
+            },
+        });
+    },
+    isValid: () => {
+        return $('#itemModalFields').valid();
+    },
+    hide: () => {
+        $('#itemModal').modal('hide');
+    },
+    show: () => {
+        $('#itemModal').modal('show');
+    },
+    fill: (itemData) => {
+        $('#Decription').val(itemData.Decription);
+        $('#Quantity').val(itemData.Quantity);
+        $('#UOM').val(itemData.UOM);
+        $('#ItemVolume').val(itemData.ItemVolume);
+        $('#ItemWeight').val(itemData.ItemWeight);
+        $('#TotalPrice').val(itemData.TotalPrice);
+        $('#PricePerUnit').val(itemData.PricePerUnit);
+        document.querySelector('#StockCode').setValue(itemData.StockCode)
+    },
+    clear: () => {
+        $('#itemModalFields input[type="text"]').val('');
+        $('#itemModalFields input[type="number"]').val('');
+        $('#itemModalFields textarea').val('');
+
+        if (document.querySelector('#UOMDropDown')?.virtualSelect) {
+            document.querySelector('#UOMDropDown').reset();
+        }
+
+        if (document.querySelector('#StockCode')?.virtualSelect) {
+            document.querySelector('#StockCode').reset();
+        }
+
+    },
+    enable: (enable) => {
+        $('#itemModalFields input[type="text"]').prop('disabled', !enable);
+        $('#itemModalFields input[type="number"]').prop('disabled', !enable);
+        $('#itemModalFields textarea').prop('disabled', !enable);
+    },
+    getData: () => {
+        return {
+            StockCode: $('#StockCode').val(),
+            Decription: $('#Decription').val(),
+            UOM: $('#UOMDropDown').val(),
+            Quantity: $('#Quantity').val(),
+            PricePerUnit: $('#PricePerUnit').val(),
+            TotalPrice: $('#TotalPrice').val(),
+
+        }
+    },
+    itemAPISave: async (item) => {
+        item.PONumber = selectedMain.PONumber;
+        item.PRD_INDEX = ItemsTH.rows().data().toArray().length + 1;
+
+        await ajax('api/orders/po-items', 'POST', JSON.stringify({ data: item }), (response) => { // Success callback
+            if (response.success) {
+                Swal.fire({
+                    title: "Success!",
+                    text: response.message,
+                    icon: "success"
+                });
+
+                SOItemsModal.hide();
+                datatables.loadItems(item.PONumber);
+                calculateCost();
+
+            }
+
+        }, (xhr, status, error) => { // Error callback
+            console.error('Error:', error);
+        });
+    },
+    itemTmpSave: (getItem) => {
+        getItem = SOItemsModal.itemCalculateUOM(getItem);
+        itemTmpSave.unshift(getItem);
+        datatables.initSOItemsDatatable(itemTmpSave);
+        calculateCost();
+        SOItemsModal.hide();
+    },
+    itemTmpUpdate: (editedItem) => {
+        // Optionally, if you want to reflect the change in currentItems
+        editedItem = SOItemsModal.itemCalculateUOM(editedItem);
+        itemTmpSave = itemTmpSave.map((item) =>
+            item.StockCode === selectedItem.StockCode
+            ? { ...item, ...editedItem }
+            : item
+        );
+
+        datatables.initSOItemsDatatable(itemTmpSave);
+        SOItemsModal.hide();
+    },
+    getUOM: () => {
+        let UomAndQuantity = {
+          CS: $("#CSQuantity").val(),
+          IB: $("#IBQuantity").val(),
+          PC: $("#PCQuantity").val(),
+        };
+    
+        UomAndQuantity = Object.fromEntries(
+          Object.entries(UomAndQuantity).filter(([_, value]) => value)
+        );
+    
+        return UomAndQuantity;
+    },
+    getTotalQuantity: (UomAndQuantity) => {
+        const ConvFactAltUom = productConFact.ConvFactAltUom;
+        const ConvFactOthUom = productConFact.ConvFactOthUom;
+        let totalInPieces = 0;
+    
+        Object.entries(UomAndQuantity).forEach(([key, uom]) => {
+          if (key.toUpperCase() === "PC") {
+            totalInPieces += Number(uom);
+          } else if (key.toUpperCase() === "IB") {
+            totalInPieces += (ConvFactAltUom / ConvFactOthUom) * Number(uom);
+          } else if (key.toUpperCase() === "CS") {
+            totalInPieces += Number(uom) * ConvFactAltUom;
+          }
+        });
+        return totalInPieces;
+    },
+    itemEditMode: (uoms, isAlreadyExist) => {
+        console.log(isAlreadyExist);
+        if (!isAlreadyExist.UomAndQuantity) {
+          isAlreadyExist.UomAndQuantity = SOItemsModal.reverseItemCalculateUOM(
+            uoms,
+            isAlreadyExist.TotalQtyInPCS
+          );
+        }
+    
+        Object.entries(isAlreadyExist.UomAndQuantity).forEach(([key, value]) => {
+          $(`#${key}Quantity`).val(value);
+        });
+    
+        $("#itemSave").text("Update Item");
+    },
+    reverseItemCalculateUOM: (uoms, totalInPieces) => {
+        var moduloResult = 0;
+        totalInPieces = selectedItem.TotalQtyInPCS;
+        let UomAndQuantity = {};
+    
+        const ConvFactAltUom = productConFact.ConvFactAltUom;
+        const ConvFactOthUom = productConFact.ConvFactOthUom;
+    
+        uoms.forEach((element) => {
+            if (element.value === "CS") {
+                // Handle Case (CS) - Largest unit
+                const getCS = Math.floor(totalInPieces / ConvFactAltUom);
+                UomAndQuantity.CS = getCS;
+                moduloResult = totalInPieces % ConvFactAltUom;
+            } else if (element.value === "IB") {
+                // Handle Intermediate Unit (IB)
+                const conFact = ConvFactAltUom / ConvFactOthUom; // Calculate conversion factor between IB and CS
+                moduloResult = moduloResult > 0 ? moduloResult : totalInPieces;
+        
+                const getIB = Math.floor(moduloResult / conFact);
+                UomAndQuantity.IB = getIB;
+        
+                moduloResult = moduloResult % conFact;
+            } else if (element.value === "PC") {
+                UomAndQuantity.PC = moduloResult;
+                // console.log(`PC: ${moduloResult}`);
+            }
+        });
+        return UomAndQuantity;
+    },
+    getData: () => {
+        const getUOM = SOItemsModal.getUOM();
+    
+        return {
+            StockCode: $("#StockCode").val().trim(),
+            Decription: $("#Decription").val(),
+            UomAndQuantity: getUOM,
+            Quantity: $("#Quantity").val(),
+            PricePerUnit: $("#PricePerUnit").val(),
+            TotalPrice: parseMoney($("#TotalPrice").val()),
+        };
+    },
+    itemCalculateUOM: (getItem) => {
+        const uomsAndQty = getItem.UomAndQuantity;
+        const ConvFactAltUom = productConFact.ConvFactAltUom;
+        const ConvFactOthUom = productConFact.ConvFactOthUom;
+    
+        const totalInPieces = SOItemsModal.getTotalQuantity(uomsAndQty);
+    
+        if (uomsAndQty.CS) {
+            getItem.UOM = "CS";
+            getItem.Quantity = (totalInPieces / ConvFactAltUom).toFixed(2);
+        } else if (uomsAndQty.IB) {
+            getItem.UOM = "IB";
+            getItem.Quantity = (
+                totalInPieces /
+                (ConvFactAltUom / ConvFactOthUom)
+            ).toFixed(2);
+        } else if (uomsAndQty.PC) {
+            getItem.UOM = "PC";
+            getItem.Quantity = totalInPieces;
+        }
+        return getItem;
+    },
+    itemTmpDelete: (skuCode) => {
+        itemTmpSave = itemTmpSave.filter(
+          (item) => item.StockCode != skuCode.text()
+        );
+    
+        datatables.initSOItemsDatatable(itemTmpSave);
+        calculateCost();
+    },
+}
+
+const vendorModal = {
+    loadVendorVS: async () => { await ajax( "api/vendors", "GET", null, (response) => {
+          vendordata = response.data;
+          const newData = vendordata.map((item) => {
+            return {
+              description: item.CompleteAddress,
+              value: item.cID, 
+              label: item.SupplierName, 
+            };
+          });
+  
+          if (document.querySelector("#vendorName")?.virtualSelect) {
+            document.querySelector("#vendorName").destroy();
+          }
+  
+          VirtualSelect.init({
+            ele: "#vendorName",
+            options: newData,
+            markSearchResults: true,
+            maxWidth: "100%",
+            search: true,
+            autofocus: true,
+            hasOptionDescription: true,
+            noSearchResultsText: `<div class="w-100 d-flex justify-content-around align-items-center mt-2">
+                                    <div class="w-auto text-center">
+                                        No result found. Add new?
+                                    </div>
+                                    <div class="w-auto">
+                                        <button id="CustomerNoDataFoundBtn" type="button" class="btn btn-primary btn-sm">Add new</button>
+                                    </div>
+                                </div>`,
+          });
+        }, (xhr, status, error) => {
+          // Error callback
+          console.error("Error:", error);
+        }
+      );
+    },
+    isValid: () => {
+      return $("#newVendorForm").valid();
+    },
+    show: () => {
+      $("#newVendorModal").modal("show");
+    },
+    hide: () => {
+      $("#newVendorModal").modal("hide");
+    },
+    clear: () => {
+      document.querySelector("#Region").reset();
+      document.querySelector("#Province").reset();
+      document.querySelector("#CityMunicipality").reset();
+      document.querySelector("#Barangay").reset();
+  
+      $('#newVendorForm input[type="text"]').val("");
+      $('#newVendorForm input[type="number"]').val("");
+      $("#newVendorForm textarea").val("");
+    },
+    getData: () => {
+      return {
+        SupplierName: $("#SupplierName").val(),
+        SupplierType: $("#SupplierType").val(),
+        TermsCode: $("#TermsCode").val(),
+        ContactPerson: $("#ContactPerson").val(),
+        ContactNo: $("#ContactNo").val(),
+        CompleteAddress: $("#NVCompleteAddress").val(),
+        Region: $("#Region").val(),
+        Province: $("#Province").val(),
+        City: $("#CityMunicipality").val(),
+        Municipality: $("#CityMunicipality").val(),
+        Barangay: $("#Barangay").val(),
+        PriceCode: $("#newVendorPriceCode").val(),
+      };
+    },
+    newVendorSave: async () => {
+      const newVendor = vendorModal.getData();
+  
+      await ajax(
+        "api/vendors",
+        "POST",
+        JSON.stringify({ newVendor }),
+        (response) => {
+          // Success callback
+          if (response.success) {
+            vendorModal.loadVendorVS();
+            vendorModal.hide();
+  
+            Swal.fire({
+              title: "Success!",
+              text: response.message,
+              icon: "success",
+            });
+          }
+        },
+        (xhr, status, error) => {
+          // Error callback
+  
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            Swal.fire({
+              title: "Opppps..",
+              text: xhr.responseJSON.message,
+              icon: "error",
+            });
+          }
+        }
+      );
+    },
+};
+  
 function downloadToCSV(jsonArr){
     const csvData = Papa.unparse(jsonArr); // Convert JSON to CSV
     var today = new Date().toISOString().split('T')[0];
@@ -403,7 +1375,6 @@ function downloadToCSV(jsonArr){
     document.body.removeChild(link);
 
 }
-
 
 async function ajaxCall(method, formDataArray = null, id) {
     let formData = new FormData();
@@ -571,4 +1542,54 @@ function trNew(fileName, indexId) {
                 </span>              
             </td>
         </tr>`;
+}
+
+const isStatSaveNew = () => {
+    return $("#saveBtn").is(":visible");
+};
+
+function autoCalculateTotalPrice() {
+    const uoms = SOItemsModal.getUOM();
+    const totalInPieces = SOItemsModal.getTotalQuantity(uoms);
+    $("#TotalPrice").val(
+      formatMoney(($("#PricePerUnit").val() || 0) * totalInPieces)
+    );
+}
+
+async function getProductPriceCodes() { await ajax( "api/getProductPriceCodes", "GET", null,
+      (response) => {
+        priceCodes = response.success && response.data;
+      },
+      (xhr, status, error) => {
+        // Error callback
+        console.error("Error:", error);
+      }
+    );
+}
+
+function formatMoney(amount, locale = "en-PH", currency = "PHP") {
+    return new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+}
+
+function parseMoney(formattedAmount) {
+    return parseFloat(formattedAmount.replace(/[^0-9.-]+/g, ""));
+}
+
+function calculateCost() {
+    const taxCost = 0;
+    const shippingCost = 0;
+    const othersCost = 0;
+    const grandTotal = ItemsTH.rows()
+      .data()
+      .toArray()
+      .reduce((sum, item) => sum + parseFloat(item.TotalPrice), 0);
+  
+    $("#taxCost").text(formatMoney(taxCost));
+    $("#shippingCost").text(formatMoney(shippingCost));
+    $("#othersCost").text(formatMoney(othersCost));
+    $("#grandTotal").text(formatMoney(grandTotal));
+    $("#subTotal").text(formatMoney(grandTotal));
 }

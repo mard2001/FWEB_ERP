@@ -9,7 +9,7 @@ use App\Traits\dbconfigs;
 class ProductPricesController
 {
     use dbconfigs;
- 
+
     /**
      * Display a listing of the resource.
      *
@@ -121,49 +121,83 @@ class ProductPricesController
     }
 
     public function getProductPricev2(Request $request)
-{
-    try {
+    {
+        try {
 
-
-        // Validate the request
-        $validatedData = $request->validate([
-            'stockCode' => 'required', // Ensure the stock code exists
-            'priceCode' => 'required|string', // Validate priceCode as a string
-        ]);
-
-        //return $request->all();
-
-        // Query the product prices table
-        $data = ProductPrices::where('stockCode', trim($validatedData['stockCode']))
-            ->where('priceCode', trim($validatedData['priceCode']))
-            ->first();
-
-        // Return appropriate response
-        if (!$data) {
-            return response()->json([
-                'response' => 'Data not found',
-                'status_response' => 2,
+            // Validate the request
+            $validatedData = $request->validate([
+                'stockCode' => 'required', // Ensure the stock code exists
+                'priceCode' => 'required|string', // Validate priceCode as a string
             ]);
+
+            // Query the product prices table
+            $data = ProductPrices::where('stockCode', trim($validatedData['stockCode']))
+                ->where('priceCode', trim($validatedData['priceCode']))
+                ->first();
+                
+
+            // Return appropriate response
+            if (!$data) {
+                return response()->json([
+                    'response' => 'Data not found',
+                    'status_response' => 2,
+                ]);
+            }
+
+            return response()->json([
+                'response' => $data,
+                'convertionFactor' => $data->product->only(['ConvFactAltUom', 'ConvFactOthUom']),
+                'status_response' => 1,
+            ], 200); // Use HTTP 200 for success
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors
+            return response()->json([
+                'response' => $e->errors(),
+                'status_response' => 0,
+            ], 422); // Use HTTP 422 for validation errors
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json([
+                'response' => $e->getMessage(),
+                'status_response' => 0,
+            ], 500); // Use HTTP 500 for server errors
         }
-
-        return response()->json([
-            'response' => $data,
-            'status_response' => 1,
-        ], 200); // Use HTTP 200 for success
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        // Handle validation errors
-        return response()->json([
-            'response' => $e->errors(),
-            'status_response' => 0,
-        ], 422); // Use HTTP 422 for validation errors
-    } catch (\Exception $e) {
-        // Handle other exceptions
-        return response()->json([
-            'response' => $e->getMessage(),
-            'status_response' => 0,
-        ], 500); // Use HTTP 500 for server errors
     }
-}
 
+    public function getProductPriceCodes()
+    {
+        try {
+
+            // Query the product prices table
+            $data = ProductPrices::select('PRICECODE')->distinct()->get();
+
+            // Return appropriate response
+            if (!$data) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Price codes not found',
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Price code retrieved successfully',
+                'data' => $data,
+            ], 200); // Use HTTP 200 for success
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors
+            return response()->json([
+                'message' => $e->errors(),
+                'success' => 0,
+            ], 422); // Use HTTP 422 for validation errors
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json([
+                'message' => $e->getMessage(),
+                'success' => 0,
+            ], 500); // Use HTTP 500 for server errors
+        }
+    }
 }

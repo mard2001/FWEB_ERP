@@ -11,6 +11,17 @@
 
 @section('table')
 <style>
+    .fa-minus,
+    .fa-plus {
+        font-size: 20px;
+    }
+
+    .fa-minus:hover,
+    .fa-plus:hover {
+        font-size: 30px;
+        cursor: pointer;
+    }
+
     .secBtns .selected {
         background-color: rgba(23, 162, 184, 0.10);
         border-bottom: 2px solid #0275d8;
@@ -185,7 +196,7 @@
                 <div class="bg-primary p-1 d-flex align-items-center text-white" style="font-size: 14px;">
                     VENDOR
                 </div>
-                <div id="vendorName" name="vendorName" required class="form-control bg-white p-0 border-0">
+                <div id="vendorName" name="vendorName" class="form-control bg-white p-0 border-0">
                     Vendor Name
                 </div>
                 <div class="input-group input-group-sm">
@@ -208,7 +219,7 @@
                     SHIP TO
                 </div>
 
-                <div id="shippedToName" name="shippedToName" required class="form-control bg-white p-0 border-0">
+                <div id="shippedToName" name="shippedToName" class="form-control bg-white p-0 border-0">
                     Shipper Name
                 </div>
 
@@ -402,10 +413,11 @@
 
                                     <label for="StockCode">StockCode</label>
 
-                                    <div id="StockCode" name="StockCode" class="form-control bg-white p-0 w-100"
-                                        required placeholder="StockCode">
+                                    <div id="StockCode" name="StockCode" class="form-control bg-white p-0 w-100">
                                         <span class="loader d-flex align-self-center" style="height: 15px; width: 15px"></span>
                                     </div>
+
+
                                 </div>
 
                                 <div class="px-1 py-0 w-100">
@@ -441,6 +453,10 @@
                                             <span class="input-group-text w-25 rounded-0">CS</span>
                                             <input disabled type="number" id="CSQuantity" name="CSQuantity" class="form-control bg-white rounded-0"
                                                 required>
+                                            <div class="w-25 d-flex justify-content-evenly align-items-center">
+                                                <i class="text-danger fa-solid fa-minus"></i>
+                                                <i class="text-primary fa-solid fa-plus"></i>
+                                            </div>
                                         </div>
                                         <label id="CSQuantity-error" class="error px-1" for="CSQuantity"></label>
                                     </div>
@@ -453,6 +469,10 @@
                                             <span class="input-group-text w-25 rounded-0">IB</span>
                                             <input disabled type="number" id="IBQuantity" name="IBQuantity" class="form-control bg-white rounded-0"
                                                 required>
+                                            <div class="w-25 d-flex justify-content-evenly align-items-center">
+                                                <i class="text-danger fa-solid fa-minus"></i>
+                                                <i class="text-primary fa-solid fa-plus"></i>
+                                            </div>
                                         </div>
                                     </div>
                                     <label id="IBQuantity-error" class="error px-1" for="IBQuantity"></label>
@@ -466,6 +486,10 @@
                                             <span class="input-group-text w-25 rounded-0">PC</span>
                                             <input disabled type="number" id="PCQuantity" name="PCQuantity" class="form-control bg-white rounded-0"
                                                 required>
+                                            <div class="w-25 d-flex justify-content-evenly align-items-center">
+                                                <i class="text-danger fa-solid fa-minus"></i>
+                                                <i class="text-primary fa-solid fa-plus"></i>
+                                            </div>
                                         </div>
                                         <label id="PCQuantity-error" class="error px-1" for="PCQuantity"></label>
 
@@ -547,8 +571,9 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary btn-sm text-white" id="itemSave">Save Item</button>
                 <button type="button" class="btn btn-info btn-sm text-white" id="itemEdit">Edit Item</button>
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="itemCloseBtn">Close</button>
             </div>
+
         </div>
     </div>
 </div>
@@ -581,26 +606,26 @@
                         </div>
                         <div class="col d-flex flex-column">
 
-                            <div id="Region" name="Region" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
-                                required placeholder="Region"><input disabled type="text" class="form-control bg-white rounded-0"
-                                    required placeholder="Region" readonly></div>
+                            <div id="Region" name="Region" class="form-control bg-white p-0 w-100 mt-2 rounded-0">
+                                <input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="Region" readonly>
+                            </div>
 
-                            <div id="Province" name="Province" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
-                                required placeholder="Province"><input disabled type="text" class="form-control bg-white rounded-0"
-                                    required placeholder="Province" readonly> </div>
+                            <div id="Province" name="Province" class="form-control bg-white p-0 w-100 mt-2 rounded-0">
+                                <input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="Province" readonly>
+                            </div>
 
-                            <div id="CityMunicipality" name="CityMunicipality" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
-                                required placeholder="City"><input disabled type="text" class="form-control bg-white rounded-0"
-                                    required placeholder="City / Municipality" readonly> </div>
+                            <div id="CityMunicipality" name="CityMunicipality" class="form-control bg-white p-0 w-100 mt-2 rounded-0">
+                                <input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="City / Municipality" readonly>
+                            </div>
 
-                            <div id="Barangay" name="Barangay" class="form-control bg-white p-0 w-100 mt-2 rounded-0"
-                                required placeholder="Barangay"> <input disabled type="text" class="form-control bg-white rounded-0"
-                                    required placeholder="Barangay" readonly> </div>
-
-
+                            <div id="Barangay" name="Barangay" class="form-control bg-white p-0 w-100 mt-2 rounded-0">
+                                <input disabled type="text" class="form-control bg-white rounded-0"
+                                    required placeholder="Barangay" readonly>
+                            </div>
                             <textarea class="form-control mt-2 rounded-0" id="NVCompleteAddress" placeholder="Address" rows="2" style="resize: none;"></textarea>
-
-
 
                         </div>
                     </div>
@@ -633,8 +658,8 @@
     $(document).ready(async function() {
 
         $("#uploadBtn").click(modalUploader);
-        
-        var modalUploader = async function () {
+
+        var modalUploader = async function() {
             var fileInput = $('#formFileMultiple').prop('files');
 
             //validate all files if csv file and to fileList
@@ -660,7 +685,7 @@
                 $('#totalFiles').html(fileInput.length);
                 $('#totalFile').html(fileInput.length);
 
-                for (let i = 0; i < fileInput.length; i++) {  // Changed var to let
+                for (let i = 0; i < fileInput.length; i++) { // Changed var to let
                     if (fileInput[i]) {
                         //console.log(`Processed index: ${i}`);
 
@@ -670,7 +695,7 @@
                             // transform: function (value) {
                             //     return value.trim(); // Trim each field
                             // },
-                            complete: async function (results) {
+                            complete: async function(results) {
 
                                 const cleanedData = results.data
                                     .map(row => Object.fromEntries(
@@ -714,13 +739,14 @@
                                     insertedResultColor = 'text-success';
 
 
-                                } if (response.status_response == 2) {
+                                }
+                                if (response.status_response == 2) {
 
                                     iconResult = `<span class="mdi mdi-alert-circle text-warning resultIcon"></span>`
                                     insertedResultColor = 'text-warning';
                                 }
 
-                                $("#fileStatus" + i).html(iconResult);  // Use i here to update the correct element
+                                $("#fileStatus" + i).html(iconResult); // Use i here to update the correct element
                                 $("#insertedStat" + i).html(`${response.total_inserted} / ${response.tatal_entry}`).addClass(insertedResultColor);
 
                                 if (i == fileInput.length - 1) {
@@ -733,7 +759,7 @@
                                         icon: "success"
                                     };
 
-                                    allResultIcon.each(function (index, element) {
+                                    allResultIcon.each(function(index, element) {
                                         // console.log($(element).attr('class'));
 
                                         if (!$(element).hasClass('text-success')) {
@@ -760,7 +786,7 @@
 
                                 }
                             },
-                            error: function (error) {
+                            error: function(error) {
                                 console.log("Error parsing the file: ", error.message);
                             }
                         });

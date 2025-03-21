@@ -13,14 +13,14 @@
             <!-- Modal Footer -->
             <div class="modal-footer py-1 d-flex justify-content-between" id="delprint">
                 <div>
-                    {{-- <button type="button" class="btn btn-sm btn-danger" id="deleteSOBtn">Delete Sheet</button> --}}
+                    <button type="button" class="btn btn-sm btn-danger" id="deleteSOBtn">Delete Sheet</button>
                     <button type="button" class="btn btn-sm btn-primary" id="rePrintPage" style="display: none;">Print Sheet</button>
                 </div>
                 <div>
-                    {{-- <button type="button" class="btn btn-sm btn-primary text-white" id="confirmSO">Confrim Sheet</button> --}}
-                    {{-- <button type="button" class="btn btn-sm btn-primary text-white" id="addSOBtn">Add Sheet</button> --}}
-                    {{-- <button type="button" class="btn btn-sm btn-info text-white" id="editSOBtn">Edit Sheet</button> --}}
-                    {{-- <button type="button" class="btn btn-sm btn-danger text-white" id="cancelEditSOBtn">Cancel Changes</button> --}}
+                    <button type="button" class="btn btn-sm btn-primary text-white" id="confirmSO">Confrim Sheet</button>
+                    <button type="button" class="btn btn-sm btn-primary text-white" id="saveSOBtn">Save Sheet</button>
+                    <button type="button" class="btn btn-sm btn-info text-white" id="editSOBtn">Edit Sheet</button>
+                    <button type="button" class="btn btn-sm btn-danger text-white" id="cancelEditSOBtn">Cancel Changes</button>
                     <button type="button" class="btn btn-sm btn-secondary" id="closeSOBtn" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>

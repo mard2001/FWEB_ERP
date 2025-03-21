@@ -128,7 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/productGetItems', [ProductController::class, 'getProductList']);
 
     Route::get('/getProductPrice', [ProductPricesController::class, 'getProductPricev2']);
-
+    Route::get('/getProductPriceCodes', [ProductPricesController::class, 'getProductPriceCodes']);
 
     Route::apiResource('/customer', CustomerController::class);
     Route::apiResource('/vendors', SupplierController::class);
