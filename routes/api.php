@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\api\Report\SalespersonController;
+use App\Http\Controllers\api\Report\SODetailController;
+use App\Http\Controllers\api\Report\SOMasterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -88,7 +90,7 @@ Route::post('/setCNTHeader', [CountController::class, 'setCNTHeader']);
 Route::get('/remCNTHeader', [CountController::class, 'remCNTHeader']);
 
 
-// Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::apiResource('/po', POController::class);
         Route::post('/po-confirm/{poid}', [POController::class, 'POConfirm']);
@@ -108,7 +110,12 @@ Route::get('/remCNTHeader', [CountController::class, 'remCNTHeader']);
         Route::apiResource('/v2/salesman', SManController::class);
         Route::apiResource('/v2/salesperson', SalespersonController::class);
         Route::post('/v2/salesperson/upload', [SalespersonController::class, 'storeBulk']);
+    });
 
+    Route::prefix('sales-order')->group(function () {
+        // Route::post('/v2/so/upload', [ProdController::class, 'storeBulk']);
+        Route::apiResource('/header', SOMasterController::class);
+        Route::apiResource('/detail', SODetailController::class);
     });
     
     Route::prefix('report')->group(function () {
@@ -131,7 +138,7 @@ Route::get('/remCNTHeader', [CountController::class, 'remCNTHeader']);
     Route::post('/registerConn', [DBConsManager::class, 'saveDbconPassword']);
 
 
-// });
+});
 
 
 

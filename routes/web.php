@@ -74,6 +74,10 @@ Route::get('/receiving-report', function () {
     return page_view('receiving_report_page');
 })->name('receiving-report');
 
+Route::get('/sales-order', function () {
+    return page_view('so_page');
+})->name('sales-order');
+
 Route::get('/purchase-order', function () {
     return page_view('purchase_order_page');
 })->name('purchase-order');
@@ -165,6 +169,48 @@ Route::get('/print/countsheet/testing', function () {
 
     return view('Pages.Printing.CountSheet_printing', compact('report'));
 })->name('printcountSheet');
+
+Route::get('/print/sales-order/testing', function () {
+    $data = [
+        'distributor' => 'Fast Distribution Corporation',
+        'branch' => 'CEBU Branch',
+        'warehouse'=> 'M1',
+        'date'=> now()->format('Y-m-d'),
+        'SalesOrder'=> 'D000688939', 
+        'OrderDate'=> '2020-09-24 00:00:00.000', 
+        'ReqShipDate'=> '2020-09-24 00:00:00.000', 
+        'Salesperson' => 'N04',
+        'Customer'=> 'F14128', 
+        'CustomerName'=> 'CELSA REGAÑON STORE(BOOKING)', 
+        'ShipAddress1'=> 'PUBLIC MARKET, TALIBON, BOHOL', 
+        'CustomerContactNum'=> '6789456321', 
+        'CustomerPoNumber'=> 'N04SO2009-101236', 
+        'Payment'=> 'CASH/COD', 
+        'DeliveryDate'=> '2020-09-24 00:00:00.000', 
+        'ShipMethod'=> 'N04', 
+        'ShipTerms'=> 'N04', 
+        'ShipVia'=> 'N04', 
+        'soitems' => []
+    ];
+
+    // Generate 40 items dynamically
+    for ($i = 1; $i <=35; $i++) {
+        $qty = rand(0, 10);
+        $price = rand(150, 9999);
+        $data['soitems'][] = [
+            'MStockCode' => rand(55000000, 99999999),
+            'MStockDes' => 'Sample Item Description' . $i,
+            'MOrderQty' => $qty,
+            'MUnitCost' => $price,
+            'MStockSubTotal'=> $price*$qty,
+        ];
+    }
+
+     // Convert array to object
+     $report = json_decode(json_encode($data));
+
+    return view('Pages.Printing.SO_printing', compact('report'));
+})->name('printSOSheet');
 
 Route::get('/print/countsheet/manual', [CountController::class, 'printManualPage'])->name('printManualPage');
 

@@ -4,7 +4,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="sidebar-logo">
-            <a href="#">Maintenance Uploader</a>
+            <a href="#">ERP</a>
         </div>
     </div>
     <ul class="sidebar-nav">
@@ -182,6 +182,15 @@
                 <i class="svgFill fa-solid fa-file-pdf ms-1" style="font-size: 22px; -webkit-text-stroke: -1px white;">
                 </i>
                 <span class="ms-2 px-1">Receiving Report</span>
+
+            </a>
+        </li>
+
+        <li class="sidebar-item">
+            <a href="{{ route('sales-order') }}" class="sidebar-link d-flex">
+                <i class="svgFill fa-solid fa-file-pdf ms-1" style="font-size: 22px; -webkit-text-stroke: -1px white;">
+                </i>
+                <span class="ms-2 px-1">Sales Order</span>
 
             </a>
         </li>
